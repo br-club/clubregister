@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | เบญจมราชาลัย</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:#f4f4f4; display:flex; align-items:center; justify-content:center; z-index:1000; }
+        .login-card { width:300px; text-align:center; }
+        .toolbar { display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap; align-items:center; }
+        #adminSearch { flex-grow:1; padding:10px; border:1px solid #ddd; border-radius:5px; }
+        .table-wrapper { overflow-x:auto; background:white; }
+        table { width:100%; border-collapse:collapse; margin-top:10px; }
+        th, td { padding:10px 12px; border:1px solid #eee; text-align:left; font-size:13px; }
+        th { background-color:var(--br-red, #c0392b); color:white; }
+        .club-cell { font-weight:bold; color:var(--br-red, #c0392b); }
+        .btn-export { background:#28a745; color:white; border:none; padding:10px 15px; border-radius:5px; cursor:pointer; }
+        .btn-del { background:#dc3545; color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer; }
+        .btn-sub { padding:8px 15px; border:1px solid var(--br-red, #c0392b); background:white; color:var(--br-red, #c0392b); border-radius:5px; cursor:pointer; }
+        .btn-sub.active { background:var(--br-red, #c0392b); color:white; }
+        .filter-btns { display:flex; gap:6px; }
+    </style>
+</head>
+<body class="admin-page">
+
+    <div id="admin-login" class="overlay">
+        <div class="card login-card">
+            <h2>ผู้ดูแลระบบ (Admin)</h2>
+            <input type="password" id="admin-password" placeholder="กรุณาใส่รหัสผ่าน">
+            <button id="admin-login-btn" class="btn-main">เข้าสู่ระบบ</button>
+            <div id="login-err" style="color:red; margin-top:8px; font-size:14px;"></div>
+        </div>
+    </div>
+
+    <div id="admin-content" class="container" style="display:none; max-width:1200px;">
+        <header style="position:relative;">
+            <h1>แผงจัดการข้อมูลลงทะเบียน</h1>
+            <p>โรงเรียนเบญจมราชาลัย ในพระบรมราชูปถัมภ์</p>
+            <button id="logout-btn" style="position:absolute; top:10px; right:0; padding:8px 16px; background:#6c757d; color:white; border:none; border-radius:5px; cursor:pointer;">🚪 ออกจากระบบ</button>
+        </header>
+
+        <div class="card admin-controls">
+            <div class="card" style="margin-bottom:15px; padding:15px;">
+                <h3 style="margin:0 0 10px 0;">⏰ กำหนดเวลาเปิด-ปิดการสมัคร</h3>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <div style="display:flex; gap:15px; flex-wrap:wrap; align-items:center;">
+                        <strong style="width:80px;">ม.ต้น</strong>
+                        <label>เปิด: <input type="datetime-local" id="juniorOpen"></label>
+                        <label>ปิด: <input type="datetime-local" id="juniorClose"></label>
+                    </div>
+                    <div style="display:flex; gap:15px; flex-wrap:wrap; align-items:center;">
+                        <strong style="width:80px;">ม.ปลาย</strong>
+                        <label>เปิด: <input type="datetime-local" id="seniorOpen"></label>
+                        <label>ปิด: <input type="datetime-local" id="seniorClose"></label>
+                    </div>
+                    <div>
+                        <button id="save-time-btn" class="btn-main" style="padding:8px 20px;">บันทึก</button>
+                        <span id="timeStatus" style="color:green; margin-left:10px;"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="toolbar">
+                <div class="filter-btns">
+                    <button id="filter-all" class="btn-sub active">ทั้งหมด</button>
+                    <button id="filter-junior" class="btn-sub">ม.ต้น</button>
+                    <button id="filter-senior" class="btn-sub">ม.ปลาย</button>
+                </div>
+                <input type="text" id="adminSearch" placeholder="ค้นหา ชื่อ / เลขประจำตัว / ชุมนุม...">
+                <button id="export-btn" class="btn-export">📥 Export to Excel</button>
+            </div>
+
+            <span id="student-count" style="font-weight:bold; color:#007bff; display:block; margin-bottom:8px;"></span>
+
+            <div class="table-wrapper">
+                <table id="registrationTable">
+                    <thead>
+                        <tr>
+                            <th>ลำดับ</th>
+                            <th>เวลาลงทะเบียน</th>
+                            <th>อีเมล</th>
+                            <th>เลขประจำตัว</th>
+                            <th>ชื่อ-นามสกุล</th>
+                            <th>ระดับ</th>
+                            <th>ห้อง</th>
+                            <th>เลขที่</th>
+                            <th>ชุมนุม</th>
+                            <th>จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTableBody">
+                        <tr><td colspan="10" style="text-align:center; padding:20px;">กำลังโหลด...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- โหลด CDN ก่อน แล้วค่อยรัน script หลัก -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
+    <script>
+        // ==================== Firebase ====================
+        const firebaseConfig = {
+            apiKey: "AIzaSyD_tIAHA7tWS_21w-_J7GHxLA_eDxC7qX8",
+            authDomain: "benjama-club-45bf3.firebaseapp.com",
+            databaseURL: "https://benjama-club-45bf3-default-rtdb.firebaseio.com",
+            projectId: "benjama-club-45bf3",
+            storageBucket: "benjama-club-45bf3.firebasestorage.app",
+            messagingSenderId: "257453794303",
+            appId: "1:257453794303:web:8a80688dce863cbfb17dca"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwIEF0K4z7d9i1YnCVqTpXoaA_chCOBCS3SPIdM1sTz1afydtgfGmjY8a2jz9oKpUQc/exec";
+        const FETCH_TIMEOUT_MS = 15000;
+        let allData = [];
+        let currentFilter = 'all';
+
+        // ==================== helper ====================
+        async function fetchWithTimeout(url, ms = FETCH_TIMEOUT_MS) {
+            const ctrl = new AbortController();
+            const t = setTimeout(() => ctrl.abort(), ms);
+            try {
+                const res = await fetch(url, { signal: ctrl.signal });
+                clearTimeout(t);
+                return res;
+            } catch (err) {
+                clearTimeout(t);
+                if (err.name === 'AbortError') throw new Error('TIMEOUT');
+                throw err;
+            }
+        }
+
+        function getLevel(classroom) {
+            const grade = parseInt(String(classroom).split('/')[0]);
+            return grade <= 3 ? 'ม.ต้น' : 'ม.ปลาย';
+        }
+
+        // ==================== Login ====================
+        function checkAdminLogin() {
+            const pass = document.getElementById('admin-password').value;
+            const errEl = document.getElementById('login-err');
+            if (pass === "100634") {
+                sessionStorage.setItem('adminLoggedIn', 'true');
+                document.getElementById('admin-login').style.display = 'none';
+                document.getElementById('admin-content').style.display = 'block';
+                errEl.innerText = '';
+                loadData();
+                loadTime();
+            } else {
+                errEl.innerText = '❌ รหัสผ่านไม่ถูกต้อง';
+                document.getElementById('admin-password').value = '';
+                document.getElementById('admin-password').focus();
+            }
+        }
+
+        // ==================== โหลดข้อมูลจาก Firebase ====================
+        async function loadData() {
+            const tbody = document.getElementById('adminTableBody');
+            tbody.innerHTML = "<tr><td colspan='10' style='text-align:center; padding:20px;'>⏳ กำลังโหลดข้อมูล...</td></tr>";
+            try {
+                const snap = await db.ref('registrations').get();
+                if (!snap.exists()) {
+                    allData = [];
+                    tbody.innerHTML = "<tr><td colspan='10' style='text-align:center; padding:20px; color:#999;'>ยังไม่มีข้อมูลการลงทะเบียน</td></tr>";
+                    document.getElementById('student-count').innerText = 'จำนวนนักเรียน: 0 คน';
+                    return;
+                }
+                const raw = snap.val();
+                allData = Object.values(raw).sort((a, b) => {
+                    if (a.classroom !== b.classroom) return String(a.classroom).localeCompare(String(b.classroom));
+                    return parseInt(a.no) - parseInt(b.no);
+                });
+                renderTable(allData);
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan='10' style='text-align:center; padding:20px; color:red;'>⚠️ โหลดข้อมูลไม่สำเร็จ: ${err.message}</td></tr>`;
+            }
+        }
+
+        // ==================== แสดงตาราง ====================
+        function renderTable(data) {
+            const tbody = document.getElementById('adminTableBody');
+            tbody.innerHTML = '';
+            if (data.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='10' style='text-align:center; padding:20px; color:#999;'>ไม่พบข้อมูล</td></tr>";
+                document.getElementById('student-count').innerText = 'จำนวนนักเรียน: 0 คน';
+                return;
+            }
+            document.getElementById('student-count').innerText = `จำนวนนักเรียน: ${data.length} คน`;
+            data.forEach((row, i) => {
+                const level = getLevel(row.classroom);
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="text-align:center;">${i + 1}</td>
+                    <td>${row.timestamp || ''}</td>
+                    <td>${row.email || ''}</td>
+                    <td style="text-align:center;">${row.studentId || ''}</td>
+                    <td>${row.name || ''}</td>
+                    <td style="text-align:center;">${level}</td>
+                    <td style="text-align:center;">${row.classroom || ''}</td>
+                    <td style="text-align:center;">${row.no || ''}</td>
+                    <td class="club-cell">${row.club || ''}</td>
+                    <td style="text-align:center;"><button class="btn-del" onclick="deleteData('${row.studentId}')">ลบ</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ==================== ค้นหา ====================
+        function searchTable() {
+            const q = document.getElementById('adminSearch').value.toLowerCase();
+            const rows = document.getElementById('adminTableBody').getElementsByTagName('tr');
+            for (let row of rows) {
+                row.style.display = row.innerText.toLowerCase().includes(q) ? '' : 'none';
+            }
+        }
+
+        // ==================== filter ====================
+        function filterByLevel(level) {
+            currentFilter = level;
+            document.querySelectorAll('.btn-sub').forEach(b => b.classList.remove('active'));
+            document.getElementById(`filter-${level}`).classList.add('active');
+            document.getElementById('adminSearch').value = '';
+            if (level === 'all') {
+                renderTable(allData);
+            } else {
+                renderTable(allData.filter(row => {
+                    const grade = parseInt(String(row.classroom).split('/')[0]);
+                    return level === 'junior' ? grade <= 3 : grade >= 4;
+                }));
+            }
+        }
+
+        // ==================== ลบข้อมูล ====================
+        async function deleteData(studentId) {
+            if (!confirm(`ยืนยันการลบข้อมูลเลขประจำตัว ${studentId}?`)) return;
+            try {
+                const key = studentId.replace(/[.#$/\[\]]/g, '_');
+                const snap = await db.ref(`registrations/${key}`).get();
+                if (!snap.exists()) { alert('❌ ไม่พบข้อมูลนักเรียนใน Firebase'); return; }
+
+                const clubName = snap.val().club;
+                const clubKey  = clubName.replace(/[.#$/\[\]]/g, '_');
+                await db.ref(`registrations/${key}`).remove();
+                await db.ref(`clubs/${clubKey}/count`).transaction(c => Math.max(0, (c || 0) - 1));
+
+                try {
+                    await fetchWithTimeout(`${SCRIPT_URL}?action=delete&studentId=${encodeURIComponent(studentId)}`);
+                } catch (_) {
+                    console.warn('Sheets delete failed');
+                }
+
+                alert('✅ ลบข้อมูลสำเร็จ');
+                loadData();
+            } catch (err) {
+                alert('⚠️ เกิดข้อผิดพลาด: ' + err.message);
+            }
+        }
+
+        // ==================== Export Excel ====================
+        function exportExcel() {
+            if (allData.length === 0) { alert('ไม่มีข้อมูลสำหรับ Export'); return; }
+            const excelData = allData.map((row, i) => ({
+                'ลำดับ': i + 1,
+                'เวลาลงทะเบียน': row.timestamp || '',
+                'อีเมล': row.email || '',
+                'เลขประจำตัว': row.studentId || '',
+                'ชื่อ-นามสกุล': row.name || '',
+                'ระดับ': getLevel(row.classroom),
+                'ห้อง': row.classroom || '',
+                'เลขที่': row.no || '',
+                'ชุมนุม': row.club || ''
+            }));
+            const ws = XLSX.utils.json_to_sheet(excelData);
+            ws['!cols'] = [{wch:8},{wch:22},{wch:28},{wch:15},{wch:30},{wch:8},{wch:8},{wch:8},{wch:50}];
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'รายชื่อนักเรียน');
+            XLSX.writeFile(wb, `รายงานการลงทะเบียนชุมนุม_${new Date().toLocaleDateString('th-TH')}.xlsx`);
+        }
+
+        // ==================== เวลา ====================
+        async function loadTime() {
+            try {
+                const res  = await fetchWithTimeout(SCRIPT_URL + '?action=getTime');
+                const data = await res.json();
+                if (data.juniorOpen)  document.getElementById('juniorOpen').value  = data.juniorOpen;
+                if (data.juniorClose) document.getElementById('juniorClose').value = data.juniorClose;
+                if (data.seniorOpen)  document.getElementById('seniorOpen').value  = data.seniorOpen;
+                if (data.seniorClose) document.getElementById('seniorClose').value = data.seniorClose;
+            } catch (_) {}
+        }
+
+        async function saveTime() {
+            const juniorOpen  = document.getElementById('juniorOpen').value;
+            const juniorClose = document.getElementById('juniorClose').value;
+            const seniorOpen  = document.getElementById('seniorOpen').value;
+            const seniorClose = document.getElementById('seniorClose').value;
+            if (!juniorOpen || !juniorClose || !seniorOpen || !seniorClose) {
+                alert('กรุณากรอกเวลาให้ครบทั้ง ม.ต้น และ ม.ปลาย'); return;
+            }
+            try {
+                await fetchWithTimeout(`${SCRIPT_URL}?action=setTime&juniorOpen=${encodeURIComponent(juniorOpen)}&juniorClose=${encodeURIComponent(juniorClose)}&seniorOpen=${encodeURIComponent(seniorOpen)}&seniorClose=${encodeURIComponent(seniorClose)}`);
+                const s = document.getElementById('timeStatus');
+                s.style.color = 'green';
+                s.innerText = '✅ บันทึกแล้ว!';
+                setTimeout(() => s.innerText = '', 3000);
+            } catch (_) {
+                const s = document.getElementById('timeStatus');
+                s.style.color = 'red';
+                s.innerText = '⚠️ บันทึกไม่สำเร็จ';
+            }
+        }
+
+        // ==================== Logout ====================
+        function logout() {
+            sessionStorage.removeItem('adminLoggedIn');
+            document.getElementById('admin-content').style.display = 'none';
+            document.getElementById('admin-login').style.display = 'flex';
+            document.getElementById('admin-password').value = '';
+            allData = [];
+        }
+
+        // ==================== ผูก event ทั้งหมดหลัง DOM + Firebase พร้อม ====================
+        window.addEventListener('load', function() {
+            document.getElementById('admin-login-btn').addEventListener('click', checkAdminLogin);
+            document.getElementById('admin-password').addEventListener('keypress', e => {
+                if (e.key === 'Enter') checkAdminLogin();
+            });
+            document.getElementById('logout-btn').addEventListener('click', logout);
+            document.getElementById('save-time-btn').addEventListener('click', saveTime);
+            document.getElementById('export-btn').addEventListener('click', exportExcel);
+            document.getElementById('adminSearch').addEventListener('keyup', searchTable);
+            document.getElementById('filter-all').addEventListener('click', () => filterByLevel('all'));
+            document.getElementById('filter-junior').addEventListener('click', () => filterByLevel('junior'));
+            document.getElementById('filter-senior').addEventListener('click', () => filterByLevel('senior'));
+
+            if (sessionStorage.getItem('adminLoggedIn') === 'true') {
+                document.getElementById('admin-login').style.display = 'none';
+                document.getElementById('admin-content').style.display = 'block';
+                loadData();
+                loadTime();
+            }
+        });
+    </script>
+</body>
+</html>

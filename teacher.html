@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบครูที่ปรึกษา | เบญจมราชาลัย</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ระบบครูที่ปรึกษาชุมนุม</h1>
+            <p>โรงเรียนเบญจมราชาลัย ในพระบรมราชูปถัมภ์</p>
+        </header>
+
+        <!-- LOGIN SECTION -->
+        <section id="teacher-login" class="card">
+            <h2>👩‍🏫 เข้าสู่ระบบครูที่ปรึกษา</h2>
+            <div class="input-group">
+                <input type="password" id="teacher-password" placeholder="รหัสผ่าน" required>
+                <button onclick="handleTeacherLogin()" class="btn-main">เข้าสู่ระบบ</button>
+            </div>
+            <div id="login-error" style="color:red; text-align:center; margin-top:10px; display:none;"></div>
+            <div style="text-align:center; margin-top:15px;">
+                <a href="index.html" style="display:inline-block; padding:8px 16px; background:#6c757d; color:white; border-radius:5px; text-decoration:none; font-size:14px;">← กลับหน้าหลัก</a>
+            </div>
+        </section>
+
+        <!-- STUDENT LIST SECTION -->
+        <section id="teacher-dashboard" class="card" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+                <div>
+                    <h2 style="margin:0;" id="teacher-greeting">สวัสดี</h2>
+                    <p style="margin:5px 0 0 0; color:#666;" id="club-name-display"></p>
+                </div>
+                <button onclick="logoutTeacher()" style="padding:8px 16px; background:#6c757d; color:white; border:none; border-radius:5px; cursor:pointer;">🚪 ออกจากระบบ</button>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:10px;">
+                <span id="student-count" style="font-weight:bold; color:#007bff;"></span>
+                <div style="display:flex; gap:8px;">
+                    <button onclick="loadStudents()" id="refresh-btn" style="padding:8px 16px; background:#28a745; color:white; border:none; border-radius:5px; cursor:pointer;">🔄 รีเฟรช</button>
+                    <button onclick="exportExcel()" style="padding:8px 16px; background:#217346; color:white; border:none; border-radius:5px; cursor:pointer;">📥 Export Excel</button>
+                </div>
+            </div>
+
+            <div style="overflow-x:auto;">
+                <table id="student-table" style="width:100%; border-collapse:collapse; font-size:14px;">
+                    <thead>
+                        <tr style="background:#007bff; color:white;">
+                            <th style="padding:10px; border:1px solid #ddd;">ลำดับ</th>
+                            <th style="padding:10px; border:1px solid #ddd;">ชื่อ-นามสกุล</th>
+                            <th style="padding:10px; border:1px solid #ddd;">เลขประจำตัว</th>
+                            <th style="padding:10px; border:1px solid #ddd;">ระดับ</th>
+                            <th style="padding:10px; border:1px solid #ddd;">ห้อง</th>
+                            <th style="padding:10px; border:1px solid #ddd;">เลขที่</th>
+                            <th style="padding:10px; border:1px solid #ddd;">เวลาลงทะเบียน</th>
+                        </tr>
+                    </thead>
+                    <tbody id="student-tbody">
+                        <tr><td colspan="7" style="text-align:center; padding:20px;">กำลังโหลด...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // ==================== Firebase ====================
+        const firebaseConfig = {
+            apiKey: "AIzaSyD_tIAHA7tWS_21w-_J7GHxLA_eDxC7qX8",
+            authDomain: "benjama-club-45bf3.firebaseapp.com",
+            databaseURL: "https://benjama-club-45bf3-default-rtdb.firebaseio.com",
+            projectId: "benjama-club-45bf3",
+            storageBucket: "benjama-club-45bf3.firebasestorage.app",
+            messagingSenderId: "257453794303",
+            appId: "1:257453794303:web:8a80688dce863cbfb17dca"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwIEF0K4z7d9i1YnCVqTpXoaA_chCOBCS3SPIdM1sTz1afydtgfGmjY8a2jz9oKpUQc/exec";
+        const FETCH_TIMEOUT_MS = 15000;
+
+        let currentClub = "";
+        let currentTeacherName = "";
+        let studentsData = [];
+
+        // ==================== helper ====================
+        async function fetchWithTimeout(url, timeoutMs = FETCH_TIMEOUT_MS) {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), timeoutMs);
+            try {
+                const res = await fetch(url, { signal: controller.signal });
+                clearTimeout(timer);
+                return res;
+            } catch (err) {
+                clearTimeout(timer);
+                if (err.name === 'AbortError') throw new Error('TIMEOUT');
+                throw err;
+            }
+        }
+
+        function showLoginError(msg) {
+            const el = document.getElementById('login-error');
+            el.innerText = msg;
+            el.style.display = 'block';
+        }
+        function hideLoginError() {
+            document.getElementById('login-error').style.display = 'none';
+        }
+
+        function getLevel(classroom) {
+            const grade = parseInt(String(classroom || '').replace("'", "").split('/')[0]);
+            return grade <= 3 ? 'ม.ต้น' : 'ม.ปลาย';
+        }
+
+        // ==================== LOGIN (verify ผ่าน Apps Script เหมือนเดิม) ====================
+        async function handleTeacherLogin() {
+            const password = document.getElementById('teacher-password').value.trim();
+            hideLoginError();
+            if (!password) { showLoginError("❌ กรุณากรอกรหัสผ่าน"); return; }
+
+            const btn = document.querySelector('#teacher-login .btn-main');
+            btn.disabled = true;
+            btn.innerText = "⏳ กำลังตรวจสอบ...";
+
+            try {
+                const res = await fetchWithTimeout(
+                    `${SCRIPT_URL}?action=verifyTeacher&password=${encodeURIComponent(password)}`
+                );
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const result = await res.json();
+
+                if (result.status === "ok") {
+                    currentTeacherName = result.teacherName;
+                    currentClub = result.club;
+                    document.getElementById('teacher-login').style.display = 'none';
+                    document.getElementById('teacher-dashboard').style.display = 'block';
+                    document.getElementById('teacher-greeting').innerText = `สวัสดี ${currentTeacherName}`;
+                    document.getElementById('club-name-display').innerText = `ชุมนุม: ${currentClub}`;
+                    loadStudents();
+                } else {
+                    showLoginError("❌ รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่");
+                    document.getElementById('teacher-password').value = '';
+                    document.getElementById('teacher-password').focus();
+                }
+            } catch (err) {
+                if (err.message === 'TIMEOUT') {
+                    showLoginError("⏱️ ระบบตอบสนองช้าเกินไป กรุณาลองใหม่");
+                } else if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+                    showLoginError("🌐 ไม่สามารถเชื่อมต่ออินเทอร์เน็ตได้");
+                } else {
+                    showLoginError("⚠️ เกิดข้อผิดพลาด: " + err.message);
+                }
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "เข้าสู่ระบบ";
+            }
+        }
+
+        // ==================== โหลดรายชื่อจาก Firebase ====================
+        async function loadStudents() {
+            const tbody = document.getElementById('student-tbody');
+            const refreshBtn = document.getElementById('refresh-btn');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">⏳ กำลังโหลด...</td></tr>';
+            refreshBtn.disabled = true;
+            refreshBtn.innerText = "⏳ กำลังโหลด...";
+
+            try {
+                const snap = await db.ref('registrations').get();
+
+                if (!snap.exists()) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#999;">ยังไม่มีนักเรียนลงทะเบียน</td></tr>';
+                    document.getElementById('student-count').innerText = 'จำนวนนักเรียน: 0 คน';
+                    studentsData = [];
+                    return;
+                }
+
+                // กรองเฉพาะชุมนุมของครูคนนี้
+                const all = Object.values(snap.val());
+                const myClub = String(currentClub).trim();
+                const filtered = all.filter(row => {
+                    const rowClub = String(row.club || '').trim();
+                    return rowClub === myClub
+                        || rowClub.includes(myClub)
+                        || myClub.includes(rowClub);
+                });
+
+                studentsData = filtered;
+
+                if (filtered.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#999;">ยังไม่มีนักเรียนลงทะเบียนในชุมนุมนี้</td></tr>';
+                    document.getElementById('student-count').innerText = 'จำนวนนักเรียน: 0 คน';
+                    return;
+                }
+
+                document.getElementById('student-count').innerText = `จำนวนนักเรียน: ${filtered.length} คน`;
+
+                // เรียงตามห้อง → เลขที่
+                filtered.sort((a, b) => {
+                    const ca = String(a.classroom || '');
+                    const cb = String(b.classroom || '');
+                    if (ca !== cb) return ca.localeCompare(cb);
+                    return parseInt(a.no || 0) - parseInt(b.no || 0);
+                });
+
+                tbody.innerHTML = filtered.map((row, i) => {
+                    const level = getLevel(row.classroom);
+                    return `
+                        <tr style="background:${i % 2 === 0 ? '#fff' : '#f8f9fa'};">
+                            <td style="padding:8px; border:1px solid #ddd; text-align:center;">${i + 1}</td>
+                            <td style="padding:8px; border:1px solid #ddd;">${row.name || ''}</td>
+                            <td style="padding:8px; border:1px solid #ddd; text-align:center;">${row.studentId || ''}</td>
+                            <td style="padding:8px; border:1px solid #ddd; text-align:center;">${level}</td>
+                            <td style="padding:8px; border:1px solid #ddd; text-align:center;">${row.classroom || ''}</td>
+                            <td style="padding:8px; border:1px solid #ddd; text-align:center;">${row.no || ''}</td>
+                            <td style="padding:8px; border:1px solid #ddd; text-align:center;">${row.timestamp || ''}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:red;">⚠️ โหลดข้อมูลไม่สำเร็จ: ${err.message}</td></tr>`;
+            } finally {
+                refreshBtn.disabled = false;
+                refreshBtn.innerText = "🔄 รีเฟรช";
+            }
+        }
+
+        // ==================== Export Excel ====================
+        function exportExcel() {
+            if (studentsData.length === 0) {
+                alert("ไม่มีข้อมูลสำหรับ Export");
+                return;
+            }
+
+            const sorted = [...studentsData].sort((a, b) => {
+                const ca = String(a.classroom || '');
+                const cb = String(b.classroom || '');
+                if (ca !== cb) return ca.localeCompare(cb);
+                return parseInt(a.no || 0) - parseInt(b.no || 0);
+            });
+
+            const excelData = [
+                ["ชุมนุม: " + currentClub],
+                [],
+                ["ลำดับ", "ชื่อ-นามสกุล", "เลขประจำตัว", "ระดับ", "ห้อง", "เลขที่", "เวลาลงทะเบียน"]
+            ];
+
+            sorted.forEach((row, i) => {
+                excelData.push([
+                    i + 1,
+                    row.name || '',
+                    row.studentId || '',
+                    getLevel(row.classroom),
+                    row.classroom || '',
+                    row.no || '',
+                    row.timestamp || ''
+                ]);
+            });
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(excelData);
+            ws['!cols'] = [
+                { wch: 8 }, { wch: 30 }, { wch: 15 },
+                { wch: 10 }, { wch: 8 }, { wch: 8 }, { wch: 22 }
+            ];
+            XLSX.utils.book_append_sheet(wb, ws, "รายชื่อนักเรียน");
+            const fileName = `ชุมนุม_${currentClub.split('(')[0].trim()}_${new Date().toLocaleDateString('th-TH')}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+        }
+
+        // ==================== Logout ====================
+        function logoutTeacher() {
+            currentClub = "";
+            currentTeacherName = "";
+            studentsData = [];
+            document.getElementById('teacher-password').value = '';
+            document.getElementById('teacher-dashboard').style.display = 'none';
+            document.getElementById('teacher-login').style.display = 'block';
+            hideLoginError();
+        }
+
+        // ==================== Enter key ====================
+        document.getElementById('teacher-password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') handleTeacherLogin();
+        });
+    </script>
+</body>
+</html>

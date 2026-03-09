@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบลงทะเบียนชุมนุม | เบญจมราชาลัย</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ระบบลงทะเบียนชุมนุม</h1>
+            <p>โรงเรียนเบญจมราชาลัย ในพระบรมราชูปถัมภ์</p>
+        </header>
+
+        <section id="login-section" class="card">
+            <h2>เข้าสู่ระบบนักเรียน</h2>
+            <div class="input-group">
+                <input type="email" id="login-email" placeholder="อีเมล (@br.ac.th)" required>
+                <input type="password" id="login-id" placeholder="เลขประจำตัวนักเรียน" required>
+                <button onclick="handleLogin()" class="btn-main">เข้าสู่ระบบ</button>
+            </div>
+            <div style="text-align:center; margin-top:15px;">
+                <a href="admin.html" style="display:inline-block; padding:8px 16px; background:#6c757d; color:white; border-radius:5px; text-decoration:none; font-size:14px; margin-right:10px;">🔧 ผู้ดูแลระบบ</a>
+                <a href="teacher.html" style="display:inline-block; padding:8px 16px; background:#17a2b8; color:white; border-radius:5px; text-decoration:none; font-size:14px;">👩‍🏫 ครูที่ปรึกษา</a>
+            </div>
+        </section>
+
+        <section id="registration-section" class="card" style="display:none;">
+            <div style="text-align:right; margin-bottom:10px;">
+                <button onclick="logoutStudent()" style="padding:8px 16px; background:#6c757d; color:white; border:none; border-radius:5px; cursor:pointer;">🚪 ออกจากระบบ</button>
+            </div>
+            <div class="level-selector">
+                <button id="btn-junior" onclick="selectLevel('junior')" class="btn-level">มัธยมศึกษาตอนต้น</button>
+                <button id="btn-senior" onclick="selectLevel('senior')" class="btn-level">มัธยมศึกษาตอนปลาย</button>
+            </div>
+
+            <form id="enroll-form" onsubmit="handleSubmit(event)" style="display:none;">
+                <div class="form-grid">
+                    <input type="text" id="name" placeholder="ชื่อ-นามสกุล" required>
+                    <input type="text" id="studentId" placeholder="เลขประจำตัว" readonly>
+                    <input type="email" id="email" placeholder="อีเมล" readonly>
+                    <select id="classroom" required></select>
+                    <input type="number" id="no" placeholder="เลขที่" required>
+                    <select id="club" required>
+                        <option value="">-- กรุณาเลือกชุมนุม --</option>
+                    </select>
+                </div>
+                <button type="button" onclick="handleSubmit(event)" id="submit-btn" class="btn-main">ยืนยันการลงทะเบียน</button>
+            </form>
+        </section>
+    </div>
+
+    <!-- ✅ โหลด Firebase ผ่าน CDN compat (ไม่ต้องใช้ import/module) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+    <!-- ✅ โหลด script.js แบบปกติ (ไม่ใช้ type="module") -->
+    <script src="script.js"></script>
+</body>
+</html>

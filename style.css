@@ -1,0 +1,58 @@
+:root {
+    --br-red: #B22222;
+    --br-white: #FFFFFF;
+    --text-dark: #333333;
+}
+
+body {
+    font-family: 'Sarabun', sans-serif;
+    background-color: #f4f4f4;
+    color: var(--text-dark);
+    margin: 0; padding: 20px;
+}
+
+.container { max-width: 800px; margin: 0 auto; }
+
+header { text-align: center; margin-bottom: 30px; }
+.logo { width: 100px; }
+
+.card {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-top: 5px solid var(--br-red);
+}
+
+.input-group input, .form-grid input, .form-grid select {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+.btn-main {
+    background-color: var(--br-red);
+    color: white;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.level-selector { display: flex; gap: 15px; margin-bottom: 20px; }
+.btn-level {
+    flex: 1; padding: 15px;
+    border: 2px solid var(--br-red);
+    background: white; color: var(--br-red);
+    cursor: pointer; font-weight: bold; border-radius: 8px;
+}
+.btn-level.active { background: var(--br-red); color: white; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
