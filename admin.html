@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | เบญจมราชาลัย</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <style>
         .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:#f4f4f4; display:flex; align-items:center; justify-content:center; z-index:1000; }
@@ -20,10 +21,24 @@
         .btn-sub { padding:8px 15px; border:1px solid var(--br-red, #c0392b); background:white; color:var(--br-red, #c0392b); border-radius:5px; cursor:pointer; }
         .btn-sub.active { background:var(--br-red, #c0392b); color:white; }
         .filter-btns { display:flex; gap:6px; }
+
+        /* Modal */
+        .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center; }
+        .modal-overlay.show { display:flex; }
+        .modal-box { background:white; border-radius:10px; padding:30px; width:480px; max-width:95%; max-height:90vh; overflow-y:auto; }
+        .modal-box h3 { margin:0 0 20px 0; color:#c0392b; }
+        .modal-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:15px; }
+        .modal-grid input, .modal-grid select { padding:10px; border:1px solid #ddd; border-radius:5px; font-size:14px; width:100%; box-sizing:border-box; }
+        .modal-grid .full-width { grid-column: 1 / -1; }
+        .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:15px; }
+        .btn-cancel { padding:10px 20px; background:#6c757d; color:white; border:none; border-radius:5px; cursor:pointer; }
+        .btn-confirm { padding:10px 20px; background:#c0392b; color:white; border:none; border-radius:5px; cursor:pointer; }
+        .admin-club-tag { display:inline-block; background:#fff3cd; color:#856404; border:1px solid #ffc107; border-radius:4px; padding:2px 8px; font-size:12px; margin-left:6px; }
     </style>
 </head>
 <body class="admin-page">
 
+    <!-- LOGIN -->
     <div id="admin-login" class="overlay">
         <div class="card login-card">
             <h2>ผู้ดูแลระบบ (Admin)</h2>
@@ -33,6 +48,7 @@
         </div>
     </div>
 
+    <!-- MAIN CONTENT -->
     <div id="admin-content" class="container" style="display:none; max-width:1200px;">
         <header style="position:relative;">
             <h1>แผงจัดการข้อมูลลงทะเบียน</h1>
@@ -41,6 +57,8 @@
         </header>
 
         <div class="card admin-controls">
+
+            <!-- ตั้งเวลา -->
             <div class="card" style="margin-bottom:15px; padding:15px;">
                 <h3 style="margin:0 0 10px 0;">⏰ กำหนดเวลาเปิด-ปิดการสมัคร</h3>
                 <div style="display:flex; flex-direction:column; gap:10px;">
@@ -61,6 +79,16 @@
                 </div>
             </div>
 
+            <!-- เพิ่มนักเรียน (ชุมนุมแอดมิน) -->
+            <div class="card" style="margin-bottom:15px; padding:15px; border-left:4px solid #ffc107;">
+                <h3 style="margin:0 0 10px 0;">➕ เพิ่มนักเรียนเข้าชุมนุม (Admin Only)
+                    <span class="admin-club-tag">ส่งเสริมประชาธิปไตย</span>
+                </h3>
+                <p style="margin:0 0 12px 0; color:#666; font-size:13px;">ชุมนุมเหล่านี้ไม่เปิดให้นักเรียนเลือกเอง แอดมินเพิ่มรายชื่อให้แทน</p>
+                <button id="add-student-btn" class="btn-main" style="background:#ffc107; color:#333; border:none;">➕ เพิ่มนักเรียน</button>
+            </div>
+
+            <!-- toolbar -->
             <div class="toolbar">
                 <div class="filter-btns">
                     <button id="filter-all" class="btn-sub active">ทั้งหมด</button>
@@ -97,7 +125,59 @@
         </div>
     </div>
 
-    <!-- โหลด CDN ก่อน แล้วค่อยรัน script หลัก -->
+    <!-- MODAL เพิ่มนักเรียน -->
+    <div id="add-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h3>➕ เพิ่มนักเรียนเข้าชุมนุม</h3>
+
+            <div class="modal-grid">
+                <div class="full-width">
+                    <label style="font-size:13px; font-weight:bold; display:block; margin-bottom:4px;">ชุมนุม (Admin Only)</label>
+                    <select id="modal-club" style="padding:10px; border:1px solid #ddd; border-radius:5px; font-size:14px; width:100%;">
+                        <option value="">-- เลือกชุมนุม --</option>
+                        <option value="ส่งเสริมประชาธิปไตย (นางสาวศิริรัตน์ สงวนศรี / นายอาชวิน สร้อยจิต)">ส่งเสริมประชาธิปไตย (ม.ต้น) — รับ 25 คน</option>
+                        <option value="ส่งเสริมประชาธิปไตย (นางสาวศิริรัตน์ สงวนศรี / นายอาชวิน สร้อยจิต) [ม.ปลาย]">ส่งเสริมประชาธิปไตย (ม.ปลาย) — รับ 15 คน</option>
+                    </select>
+                </div>
+
+                <div class="full-width">
+                    <label style="font-size:13px; font-weight:bold; display:block; margin-bottom:4px;">ชื่อ-นามสกุล</label>
+                    <input type="text" id="modal-name" placeholder="ชื่อ-นามสกุล">
+                </div>
+
+                <div>
+                    <label style="font-size:13px; font-weight:bold; display:block; margin-bottom:4px;">เลขประจำตัว</label>
+                    <input type="text" id="modal-studentId" placeholder="เลขประจำตัว">
+                </div>
+
+                <div>
+                    <label style="font-size:13px; font-weight:bold; display:block; margin-bottom:4px;">อีเมล</label>
+                    <input type="email" id="modal-email" placeholder="อีเมล @br.ac.th">
+                </div>
+
+                <div>
+                    <label style="font-size:13px; font-weight:bold; display:block; margin-bottom:4px;">ห้อง</label>
+                    <select id="modal-classroom">
+                        <option value="">-- เลือกห้อง --</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label style="font-size:13px; font-weight:bold; display:block; margin-bottom:4px;">เลขที่</label>
+                    <input type="number" id="modal-no" placeholder="เลขที่" min="1" max="60">
+                </div>
+            </div>
+
+            <div id="modal-status" style="min-height:20px; font-size:13px; margin-bottom:8px;"></div>
+
+            <div class="modal-actions">
+                <button class="btn-cancel" id="modal-cancel">ยกเลิก</button>
+                <button class="btn-confirm" id="modal-confirm">✅ บันทึก</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -121,7 +201,13 @@
         let allData = [];
         let currentFilter = 'all';
 
-        // ==================== helper ====================
+        // ชุมนุม admin-only พร้อม capacity
+        const adminClubs = {
+            "ส่งเสริมประชาธิปไตย (นางสาวศิริรัตน์ สงวนศรี / นายอาชวิน สร้อยจิต)": 25,
+            "ส่งเสริมประชาธิปไตย (นางสาวศิริรัตน์ สงวนศรี / นายอาชวิน สร้อยจิต) [ม.ปลาย]": 15
+        };
+
+        // ==================== helpers ====================
         async function fetchWithTimeout(url, ms = FETCH_TIMEOUT_MS) {
             const ctrl = new AbortController();
             const t = setTimeout(() => ctrl.abort(), ms);
@@ -136,6 +222,8 @@
             }
         }
 
+        function toKey(str) { return str.replace(/[.#$/\[\]]/g, '_'); }
+
         function getLevel(classroom) {
             const grade = parseInt(String(classroom).split('/')[0]);
             return grade <= 3 ? 'ม.ต้น' : 'ม.ปลาย';
@@ -143,9 +231,9 @@
 
         // ==================== Login ====================
         function checkAdminLogin() {
-            const pass = document.getElementById('admin-password').value;
+            const pass  = document.getElementById('admin-password').value;
             const errEl = document.getElementById('login-err');
-            if (pass === "100634") {
+            if (pass === "brclub112") {
                 sessionStorage.setItem('adminLoggedIn', 'true');
                 document.getElementById('admin-login').style.display = 'none';
                 document.getElementById('admin-content').style.display = 'block';
@@ -159,7 +247,7 @@
             }
         }
 
-        // ==================== โหลดข้อมูลจาก Firebase ====================
+        // ==================== โหลดข้อมูล ====================
         async function loadData() {
             const tbody = document.getElementById('adminTableBody');
             tbody.innerHTML = "<tr><td colspan='10' style='text-align:center; padding:20px;'>⏳ กำลังโหลดข้อมูล...</td></tr>";
@@ -176,9 +264,9 @@
                     if (a.classroom !== b.classroom) return String(a.classroom).localeCompare(String(b.classroom));
                     return parseInt(a.no) - parseInt(b.no);
                 });
-                renderTable(allData);
+                filterByLevel(currentFilter);
             } catch (err) {
-                tbody.innerHTML = `<tr><td colspan='10' style='text-align:center; padding:20px; color:red;'>⚠️ โหลดข้อมูลไม่สำเร็จ: ${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan='10' style='text-align:center; padding:20px; color:red;'>⚠️ โหลดไม่สำเร็จ: ${err.message}</td></tr>`;
             }
         }
 
@@ -194,7 +282,9 @@
             document.getElementById('student-count').innerText = `จำนวนนักเรียน: ${data.length} คน`;
             data.forEach((row, i) => {
                 const level = getLevel(row.classroom);
+                const isAdminClub = Object.keys(adminClubs).some(c => row.club && row.club.includes(c.split(' (')[0]));
                 const tr = document.createElement('tr');
+                if (isAdminClub) tr.style.background = '#fffbea';
                 tr.innerHTML = `
                     <td style="text-align:center;">${i + 1}</td>
                     <td>${row.timestamp || ''}</td>
@@ -204,7 +294,7 @@
                     <td style="text-align:center;">${level}</td>
                     <td style="text-align:center;">${row.classroom || ''}</td>
                     <td style="text-align:center;">${row.no || ''}</td>
-                    <td class="club-cell">${row.club || ''}</td>
+                    <td class="club-cell">${row.club || ''}${isAdminClub ? '<span class="admin-club-tag">Admin</span>' : ''}</td>
                     <td style="text-align:center;"><button class="btn-del" onclick="deleteData('${row.studentId}')">ลบ</button></td>
                 `;
                 tbody.appendChild(tr);
@@ -240,20 +330,18 @@
         async function deleteData(studentId) {
             if (!confirm(`ยืนยันการลบข้อมูลเลขประจำตัว ${studentId}?`)) return;
             try {
-                const key = studentId.replace(/[.#$/\[\]]/g, '_');
+                const key  = toKey(studentId);
                 const snap = await db.ref(`registrations/${key}`).get();
-                if (!snap.exists()) { alert('❌ ไม่พบข้อมูลนักเรียนใน Firebase'); return; }
+                if (!snap.exists()) { alert('❌ ไม่พบข้อมูลนักเรียน'); return; }
 
                 const clubName = snap.val().club;
-                const clubKey  = clubName.replace(/[.#$/\[\]]/g, '_');
+                const clubKey  = toKey(clubName);
                 await db.ref(`registrations/${key}`).remove();
                 await db.ref(`clubs/${clubKey}/count`).transaction(c => Math.max(0, (c || 0) - 1));
 
                 try {
                     await fetchWithTimeout(`${SCRIPT_URL}?action=delete&studentId=${encodeURIComponent(studentId)}`);
-                } catch (_) {
-                    console.warn('Sheets delete failed');
-                }
+                } catch (_) { console.warn('Sheets delete failed'); }
 
                 alert('✅ ลบข้อมูลสำเร็จ');
                 loadData();
@@ -316,6 +404,101 @@
             }
         }
 
+        // ==================== Modal เพิ่มนักเรียน ====================
+        function openAddModal() {
+            // populate classroom dropdown
+            const sel = document.getElementById('modal-classroom');
+            sel.innerHTML = '<option value="">-- เลือกห้อง --</option>';
+            for (let g = 1; g <= 6; g++) {
+                for (let r = 1; r <= 9; r++) {
+                    const opt = document.createElement('option');
+                    opt.value = `${g}/${r}`; opt.text = `${g}/${r}`;
+                    sel.add(opt);
+                }
+            }
+            // clear fields
+            document.getElementById('modal-club').value = '';
+            document.getElementById('modal-name').value = '';
+            document.getElementById('modal-studentId').value = '';
+            document.getElementById('modal-email').value = '';
+            document.getElementById('modal-classroom').value = '';
+            document.getElementById('modal-no').value = '';
+            document.getElementById('modal-status').innerText = '';
+            document.getElementById('add-modal').classList.add('show');
+        }
+
+        function closeAddModal() {
+            document.getElementById('add-modal').classList.remove('show');
+        }
+
+        async function saveAddStudent() {
+            const clubName  = document.getElementById('modal-club').value.trim();
+            const name      = document.getElementById('modal-name').value.trim();
+            const studentId = document.getElementById('modal-studentId').value.trim();
+            const email     = document.getElementById('modal-email').value.trim();
+            const classroom = document.getElementById('modal-classroom').value;
+            const no        = document.getElementById('modal-no').value.trim();
+            const statusEl  = document.getElementById('modal-status');
+
+            if (!clubName)  { statusEl.innerHTML = '<span style="color:red;">❌ กรุณาเลือกชุมนุม</span>'; return; }
+            if (!name)      { statusEl.innerHTML = '<span style="color:red;">❌ กรุณากรอกชื่อ-นามสกุล</span>'; return; }
+            if (!studentId) { statusEl.innerHTML = '<span style="color:red;">❌ กรุณากรอกเลขประจำตัว</span>'; return; }
+            if (!classroom) { statusEl.innerHTML = '<span style="color:red;">❌ กรุณาเลือกห้อง</span>'; return; }
+            if (!no)        { statusEl.innerHTML = '<span style="color:red;">❌ กรุณากรอกเลขที่</span>'; return; }
+
+            const confirmBtn = document.getElementById('modal-confirm');
+            confirmBtn.disabled = true;
+            confirmBtn.innerText = '⏳ กำลังบันทึก...';
+            statusEl.innerText = '';
+
+            const studentKey = toKey(studentId);
+            const clubKey    = toKey(clubName);
+            const capacity   = adminClubs[clubName] || 999;
+
+            try {
+                // ตรวจสอบ duplicate
+                const existSnap = await db.ref(`registrations/${studentKey}`).get();
+                if (existSnap.exists()) {
+                    statusEl.innerHTML = '<span style="color:red;">⚠️ เลขประจำตัวนี้ลงทะเบียนไปแล้ว</span>';
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerText = '✅ บันทึก';
+                    return;
+                }
+
+                // ตรวจสอบ capacity
+                let full = false;
+                await db.ref(`clubs/${clubKey}/count`).transaction(current => {
+                    const count = current || 0;
+                    if (count >= capacity) { full = true; return; }
+                    return count + 1;
+                });
+
+                if (full) {
+                    statusEl.innerHTML = `<span style="color:red;">❌ ชุมนุมเต็มแล้ว (${capacity} คน)</span>`;
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerText = '✅ บันทึก';
+                    return;
+                }
+
+                const timestamp = new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' });
+                await db.ref(`registrations/${studentKey}`).set({
+                    timestamp, email, studentId, no, classroom, name, club: clubName
+                });
+
+                statusEl.innerHTML = '<span style="color:green;">✅ บันทึกสำเร็จ!</span>';
+                setTimeout(() => {
+                    closeAddModal();
+                    loadData();
+                }, 800);
+
+            } catch (err) {
+                statusEl.innerHTML = `<span style="color:red;">⚠️ เกิดข้อผิดพลาด: ${err.message}</span>`;
+            } finally {
+                confirmBtn.disabled = false;
+                confirmBtn.innerText = '✅ บันทึก';
+            }
+        }
+
         // ==================== Logout ====================
         function logout() {
             sessionStorage.removeItem('adminLoggedIn');
@@ -325,7 +508,7 @@
             allData = [];
         }
 
-        // ==================== ผูก event ทั้งหมดหลัง DOM + Firebase พร้อม ====================
+        // ==================== ผูก events ====================
         window.addEventListener('load', function() {
             document.getElementById('admin-login-btn').addEventListener('click', checkAdminLogin);
             document.getElementById('admin-password').addEventListener('keypress', e => {
@@ -338,6 +521,14 @@
             document.getElementById('filter-all').addEventListener('click', () => filterByLevel('all'));
             document.getElementById('filter-junior').addEventListener('click', () => filterByLevel('junior'));
             document.getElementById('filter-senior').addEventListener('click', () => filterByLevel('senior'));
+            document.getElementById('add-student-btn').addEventListener('click', openAddModal);
+            document.getElementById('modal-cancel').addEventListener('click', closeAddModal);
+            document.getElementById('modal-confirm').addEventListener('click', saveAddStudent);
+
+            // ปิด modal ถ้าคลิกนอก box
+            document.getElementById('add-modal').addEventListener('click', function(e) {
+                if (e.target === this) closeAddModal();
+            });
 
             if (sessionStorage.getItem('adminLoggedIn') === 'true') {
                 document.getElementById('admin-login').style.display = 'none';

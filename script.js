@@ -64,8 +64,7 @@ function setLoading(btn, loading, defaultText) {
 const clubsJunior = [
     { name: "Freestyle by Science (นายธนวิน จันทร)", capacity: 25 },
     { name: "Freedom.G (นางสาวผกาแก้ว ชัยยะ / นางสาววาณี เก่งการทำ)", capacity: 40 },
-    { name: "เพลิน and play (นางสาวชนชนก นามโสม / นางสาวมัลลิกา เหลยชัย)", capacity: 40 },
-    { name: "Science X Cinema (นางสาววิชชญา กันบุรมย์)", capacity: 25 },
+    { name: "เพลิน and play (นางสาวชนชนก นามโสม / นางสาววิชชญา กันบุรมย์)", capacity: 40 },
     { name: "เพื่อนที่ปรึกษา (Youth Counselor: YC) (นายรัชพล พลวงค์ษา / นางสาวทิพยรัตน์ อยู่แท้กูล)", capacity: 40 },
     { name: "DIY หรรษา (นางสาวกฤติยา โสภิณ / นางสาวมัญชุสร รัตนะ)", capacity: 40 },
     { name: "เสน่ห์ปลายจวัก (นางสาวสลิลดา พิชยกัลป์ / นายธนกร แสงผ่อง)", capacity: 40 },
@@ -75,11 +74,11 @@ const clubsJunior = [
     { name: "Enjoy with Youtube (นางสาวมินิมล อ่อนจันทร์)", capacity: 25 },
     { name: "A-Math & Four Stars (นายศาศวัต คงกะเรียน / นางสาวจันทร์จิรา นวกุล)", capacity: 40 },
     { name: "Chinese DIY (นางสาวลลิตา เกรียงเจริญศิริ / นางสาววิภาวี อนุจาผัด)", capacity: 40 },
-    { name: "โลกศิลปะ (นายกฤษฎา วัฒนศิลป์)", capacity: 40 },
+    { name: "โลกศิลปะ (นายกฤษฎา วัฒนศิลป์)", capacity: 30 },
     { name: "บาสเกตบอล (นายธวัชชัย ตั้งสุรธีรวงศ์ / นายพิฑูร กิจประเสริฐ)", capacity: 25 },
     { name: "ชุมนุมกีฬาบริดจ์ (นายผดุงศักดิ์ บูรณะสมบัติ)", capacity: 25 },
     { name: "หมากกระดาน (นายภัทรรัตน์ ปิยะภัทรสกุล / นายธนภูมิ ท้าวมะลิ)", capacity: 25 },
-    { name: "พิมพ์ดีด-พิมพ์ใจ (นางสาวณัชชนม์ สุวรรณธาดา / นางสาวนพพร วาอุทัศน์)", capacity: 25 },
+    { name: "พิมพ์ดีด-พิมพ์ใจ (นางสาวณัชชนม์ สุวรรณธาดา / นางสาวนพพร วาอุทัศน์ / นายสุทธิพันธ์ สาหมีด)", capacity: 25 },
     { name: "ภารกิจพิชิตดิจิทัล (นางจิตราภรณ์ บัวจำรัส / นางสาวเพชรรัตน์ มหรรชกุล)", capacity: 25 },
     { name: "Crossword: To Be The Star (นางสาวปนิตา ยืนยาว / นายคณิน รักเกียรติสกุล / นางอรวรรณ แสแสงสีรุ้ง)", capacity: 25 },
     { name: "ครูสาวน่าอีส (นางสาวสุดารัตน์ พลโภชน์ / นายธนิสร ศิริกุล)", capacity: 25 },
@@ -89,33 +88,34 @@ const clubsJunior = [
     { name: "สร้างสรรค์ปั้นดินไทย (นางสาวโสรยา สุธาพจน์ / นางสาวศุภัสรา มิ่งแมน)", capacity: 25 },
     { name: "ดนตรีไทย (ครูสุริยพงษ์ บุญโกมล)", capacity: 15 },
     { name: "ศิลปะเพื่อการแข่งขัน (นางสาวจุฑามาศ ทิพยกระมล / นายทรงยศ คำอยู่)", capacity: 25 },
-    { name: "นาฏศิลป์ (นายเอกชัย แตบสวัสดิ์ / ครูนาฏศิลป์ อัตราจ้าง)", capacity: 25 },
+    { name: "นาฏศิลป์ (นายเอกชัย แตบสวัสดิ์ / นางสาวศุุภิสรา กลิ่นหอม )", capacity: 25 },
     { name: "วงโยธวาทิต (นายรุ่งโรจน์ ศรีสังข์ / นายยงยศ สง่าวงษ์)", capacity: 25 },
     { name: "ว่ายน้ำ (นางสาววารินทร์ เกตุเกลี้ยง / นางสาวเบญญทิพย์ เขียวราชา)", capacity: 25 },
+    { name: "ส่งเสริมประชาธิปไตย (นางสาวศิริรัตน์ สงวนศรี / นายอาชวิน สร้อยจิต)", capacity: 15, adminOnly: true },
     { name: "โอ้เอ้วิหารราย (นางสาวยุวดี ว่องสกุลกฤษฎา / นางสาวสว่างจิต แก้วถนัด / นายภควรรษ รอดความทุกข์)", capacity: 30 }
 ];
 
 // ==================== ชุมนุม ม.ปลาย ====================
 const clubsSenior = [
-    { name: "SMTE ม.ปลาย (นางสาวมินตรา กระเป๋าทอง)", capacity: 25 },
-    { name: "E-Sport (นายสุทธิพงศ์ อาศิรพจน์)", capacity: 25 },
+    { name: "SMTE ม.ปลาย (นางสาวมินตรา กระเป๋าทอง)", capacity: 30 },
+    { name: "E-Sport (นายสุทธิพงศ์ อาศิรพจน์ / นางสาวศุุภารัตน์ จันทนะ)", capacity: 40 },
     { name: "มิตรภาพบอร์ดเกม (ว่าที่ร.ต.มัฆวัตว์ แสนบุญศิริ / นายพรพงศ์ ทองคำ)", capacity: 40 },
-    { name: "วิทย์น่าสนุก (นางสาวกวิสรา ทรงอาวุธ / นางสาวยุวรัตน์ สมบัติคีรีไพบูลย์)", capacity: 25 },
+    { name: "วิทย์น่าสนุก (นางสาวกวิสรา ทรงอาวุธ)", capacity: 25 },
     { name: "Smart Consumer Lab นักสืบสินค้า (นางมะลิวัลย์ ประทุมทอง / นางสาวสุพัตรา ไทยกุล)", capacity: 40 },
     { name: "นักล่าของอร่อย (ว่าที่ร้อยตรีหญิงปาริชาติ ธรรมสุวรรณ / นายณิชชภา อโนมา)", capacity: 40 },
     { name: "จินตคณิต (นางสาวกรรณิกา ชินวิวัฒนผล / นางสาวนันทวัน สิงห์สังข์)", capacity: 40 },
     { name: "คณิตคิดไปเรื่อย (นางสาวนันทวัลย์ เฟื่องฟู / นายธัชณวีย์ สุขทรัพย์)", capacity: 40 },
-    { name: "Art of Math (นางสาวลลิต วรกาญจน์ / นางสาวทฤฒมน บรรจงรอด)", capacity: 40 },
+    { name: "A math ม.ปลาย (นางสาวลลิต วรกาญจน์ / นางสาวทฤฒมน บรรจงรอด)", capacity: 40 },
     { name: "French for the neighborhood of Sao Ching Cha (นางสาวกานต์ชนก สมภักดี / นายวรพล ขำปาน)", capacity: 40 },
     { name: "หนังเปิดโลก (ว่าที่ร้อยตรีปรเมธ เทพขวัญ / นางสาวจงกลกร เลือดทหาร)", capacity: 40 },
     { name: "A-Level คณิตศาสตร์ (ครูนพกร จิราศักดิ์เกษม)", capacity: 25 },
-    { name: "Guidance & Growth Club (ครูวัสสิกา นุ่นทอง)", capacity: 25 },
-    { name: "ECO Craft & Culture Club (นางสาวดารากันย์ เจริญจิต / นางสาวนิตยา อาจเดช)", capacity: 40 },
+    { name: "Guidance & Growth Club (ครูวัสสิกา นุ่นทอง)", capacity: 30 },
+    { name: "TED Talks x BR (นางสาวดารากันย์ เจริญจิต / นางสาวนิตยา อาจเดช)", capacity: 40 },
     { name: "เล่นให้เป็นคน (นายตรัยรัตน์ บุญพา / นายธนพล ห้วยหงษ์ทอง)", capacity: 40 },
     { name: "Drama and Film (นางสาวพิมพลอย รัตนมาศ / นายธิติพงศ์ จุรุฑา)", capacity: 40 },
-    { name: "รอบรู้รอบรั้วโรงเรียน (นายไพรัตน์ ลิ้มปองทรัพย์)", capacity: 25 },
+    { name: "รอบรู้รอบรั้วโรงเรียน (นายไพรัตน์ ลิ้มปองทรัพย์)", capacity: 30 },
     { name: "Hello World: ท่องโลก 3 สไตล์ (นายวิทยา ศรีสร้อย / นางสาวพิมพ์พรรณ มโนมัยฤนาท)", capacity: 40 },
-    { name: "อะไรจีน จีน (นางสาวจิรพร เข็มเพ็ชร์ / ครูอาสาสมัครจีน)", capacity: 40 },
+    { name: "อะไรจีน จีน (นางสาวจิรพร เข็มเพ็ชร์ / Miss Wang Fei)", capacity: 40 },
     { name: "วิทยากรรุ่นเยาว์ (นายรุ่งโรจน์ ติดมา)", capacity: 25 },
     { name: "บาสเกตบอล (นายธวัชชัย ตั้งสุรธีรวงศ์ / นายพิฑูร กิจประเสริฐ)", capacity: 15 },
     { name: "ชุมนุมกีฬาบริดจ์ (นายผดุงศักดิ์ บูรณะสมบัติ)", capacity: 15 },
@@ -133,6 +133,7 @@ const clubsSenior = [
     { name: "นาฏศิลป์ (นายเอกชัย แตบสวัสดิ์ / ครูนาฏศิลป์ อัตราจ้าง)", capacity: 15 },
     { name: "วงโยธวาทิต (นายรุ่งโรจน์ ศรีสังข์ / นายยงยศ สง่าวงษ์)", capacity: 15 },
     { name: "ว่ายน้ำ (นางสาววารินทร์ เกตุเกลี้ยง / นางสาวเบญญทิพย์ เขียวราชา)", capacity: 15 },
+    { name: "ส่งเสริมประชาธิปไตย (นางสาวศิริรัตน์ สงวนศรี / นายอาชวิน สร้อยจิต)", capacity: 15, adminOnly: true },
     { name: "โอ้เอ้วิหารราย (นางสาวยุวดี ว่องสกุลกฤษฎา / นางสาวสว่างจิต แก้วถนัด / นายภควรรษ รอดความทุกข์)", capacity: 20 }
 ];
 
@@ -161,10 +162,11 @@ async function handleLogin() {
         const result = await res.json();
 
         if (result.status === "ok") {
-            document.getElementById('email').value = email;
-            document.getElementById('studentId').value = id;
+            // ซ่อนหน้า Login และแสดงหน้า Registration
             document.getElementById('login-section').style.display = 'none';
             document.getElementById('registration-section').style.display = 'block';
+            
+            // ตรวจสอบว่าเคยลงทะเบียนหรือยัง (ฟังก์ชันจะจัดการแสดงฟอร์มให้อัตโนมัติ)
             await checkExistingEnrollment(id, email);
         } else {
             alert("❌ อีเมลหรือเลขประจำตัวไม่ถูกต้อง\nกรุณาตรวจสอบอีกครั้ง");
@@ -206,9 +208,14 @@ async function checkExistingEnrollment(studentId, email = '') {
                 <input type="hidden" id="studentId" value="${studentId}">
                 <input type="hidden" id="email" value="${data.email || email}">
             `;
+        } else {
+            // ถ้านักเรียนยังไม่เคยลงทะเบียน ให้แสดงฟอร์ม
+            showRegistrationForm(studentId, email);
         }
     } catch (err) {
         console.error("checkExistingEnrollment error:", err);
+        // กรณีดึงข้อมูลมีปัญหา ให้แสดงฟอร์มไว้ก่อน
+        showRegistrationForm(studentId, email);
     }
 }
 
@@ -294,6 +301,8 @@ async function selectLevel(level) {
 
     clubSelect.innerHTML = '<option value="">-- กรุณาเลือกชุมนุม --</option>';
     clubs.forEach(c => {
+        if (c.adminOnly) return; // ชุมนุมที่แอดมินจัดการเอง — ไม่แสดงให้นักเรียนเลือก
+
         const key    = toKey(c.name);
         const count  = (countsSnap[key] && countsSnap[key].count) ? countsSnap[key].count : 0;
         const left   = c.capacity - count;
@@ -360,6 +369,15 @@ async function handleSubmit(e) {
     if (!classroom) { alert("❌ กรุณาเลือกห้องเรียน");     setLoading(btn, false, "ยืนยันการลงทะเบียน"); return; }
     if (!no)        { alert("❌ กรุณากรอกเลขที่");          setLoading(btn, false, "ยืนยันการลงทะเบียน"); return; }
     if (!clubName)  { alert("❌ กรุณาเลือกชุมนุม");         setLoading(btn, false, "ยืนยันการลงทะเบียน"); return; }
+
+    // ป้องกันการ submit ชุมนุม adminOnly โดยตรง (กันการโกง)
+    const allClubs = [...clubsJunior, ...clubsSenior];
+    const clubData = allClubs.find(c => c.name === clubName);
+    if (clubData && clubData.adminOnly) {
+        alert("❌ ชุมนุมนี้ไม่เปิดให้นักเรียนลงทะเบียนเอง");
+        setLoading(btn, false, "ยืนยันการลงทะเบียน");
+        return;
+    }
 
     const clubKey    = toKey(clubName);
     const studentKey = toKey(studentId);
@@ -458,13 +476,22 @@ function logoutStudent() {
     document.getElementById('login-section').style.display = 'block';
     document.getElementById('login-email').value = '';
     document.getElementById('login-id').value = '';
-    showRegistrationForm();
+    
+    // เคลียร์ข้อมูลฟอร์มลงทะเบียนเดิมออก เพื่อความปลอดภัย
+    document.getElementById('registration-section').innerHTML = '';
 }
 
 // ==================== Enter key ====================
-document.getElementById('login-id').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') handleLogin();
-});
-document.getElementById('login-email').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') handleLogin();
-});
+const loginIdElement = document.getElementById('login-id');
+if (loginIdElement) {
+    loginIdElement.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') handleLogin();
+    });
+}
+
+const loginEmailElement = document.getElementById('login-email');
+if (loginEmailElement) {
+    loginEmailElement.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') handleLogin();
+    });
+}
