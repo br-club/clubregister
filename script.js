@@ -152,6 +152,10 @@ async function handleLogin() {
     }
 
     const btn = document.querySelector('#login-section .btn-main');
+    
+    // 🛡️ ป้องกันการกดปุ่มเข้าสู่ระบบซ้ำรัวๆ
+    if (btn.disabled) return;
+
     setLoading(btn, true, "เข้าสู่ระบบ");
 
     try {
@@ -227,7 +231,10 @@ async function cancelEnrollment() {
     if (!confirm("⚠️ ยืนยันการยกเลิกการลงทะเบียนชุมนุม?")) return;
 
     const btn = document.getElementById('cancel-btn');
-    if (btn) setLoading(btn, true, "❌ ยกเลิกการลงทะเบียน");
+    if (btn) {
+        if (btn.disabled) return;
+        setLoading(btn, true, "❌ ยกเลิกการลงทะเบียน");
+    }
 
     try {
         const snap = await dbGet(`registrations/${toKey(studentId)}`);
@@ -353,6 +360,10 @@ async function selectLevel(level) {
 async function handleSubmit(e) {
     if (e && e.preventDefault) e.preventDefault();
     const btn = document.getElementById('submit-btn');
+    
+    // 🛡️ ป้องกันการลงทะเบียนซ้ำซ้อนจากการกดปุ่มเบิ้ลรัวๆ (Double Submit Shield)
+    if (btn.disabled) return;
+
     setLoading(btn, true, "ยืนยันการลงทะเบียน");
 
     const clubSelect     = document.getElementById('club');

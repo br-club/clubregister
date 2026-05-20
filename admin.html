@@ -16,7 +16,7 @@
         th, td { padding:10px 12px; border:1px solid #eee; text-align:left; font-size:13px; }
         th { background-color:var(--br-red, #c0392b); color:white; }
         .club-cell { font-weight:bold; color:var(--br-red, #c0392b); }
-        .btn-export { background:#28a745; color:white; border:none; padding:10px 15px; border-radius:5px; cursor:pointer; }
+        .btn-export { background:#28a745; color:white; border:none; padding:10px 15px; border-radius:5px; cursor:pointer; font-weight:bold; }
         .btn-del { background:#dc3545; color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer; }
         .btn-sub { padding:8px 15px; border:1px solid var(--br-red, #c0392b); background:white; color:var(--br-red, #c0392b); border-radius:5px; cursor:pointer; }
         .btn-sub.active { background:var(--br-red, #c0392b); color:white; }
@@ -38,7 +38,6 @@
 </head>
 <body class="admin-page">
 
-    <!-- LOGIN -->
     <div id="admin-login" class="overlay">
         <div class="card login-card">
             <h2>ผู้ดูแลระบบ (Admin)</h2>
@@ -48,7 +47,6 @@
         </div>
     </div>
 
-    <!-- MAIN CONTENT -->
     <div id="admin-content" class="container" style="display:none; max-width:1200px;">
         <header style="position:relative;">
             <h1>แผงจัดการข้อมูลลงทะเบียน</h1>
@@ -58,7 +56,6 @@
 
         <div class="card admin-controls">
 
-            <!-- ตั้งเวลา -->
             <div class="card" style="margin-bottom:15px; padding:15px;">
                 <h3 style="margin:0 0 10px 0;">⏰ กำหนดเวลาเปิด-ปิดการสมัคร</h3>
                 <div style="display:flex; flex-direction:column; gap:10px;">
@@ -79,7 +76,6 @@
                 </div>
             </div>
 
-            <!-- เพิ่มนักเรียน (ชุมนุมแอดมิน) -->
             <div class="card" style="margin-bottom:15px; padding:15px; border-left:4px solid #ffc107;">
                 <h3 style="margin:0 0 10px 0;">➕ เพิ่มนักเรียนเข้าชุมนุม (Admin Only)
                     <span class="admin-club-tag">ส่งเสริมประชาธิปไตย</span>
@@ -88,7 +84,6 @@
                 <button id="add-student-btn" class="btn-main" style="background:#ffc107; color:#333; border:none;">➕ เพิ่มนักเรียน</button>
             </div>
 
-            <!-- toolbar -->
             <div class="toolbar">
                 <div class="filter-btns">
                     <button id="filter-all" class="btn-sub active">ทั้งหมด</button>
@@ -96,7 +91,10 @@
                     <button id="filter-senior" class="btn-sub">ม.ปลาย</button>
                 </div>
                 <input type="text" id="adminSearch" placeholder="ค้นหา ชื่อ / เลขประจำตัว / ชุมนุม...">
-                <button id="export-btn" class="btn-export">📥 Export to Excel</button>
+                
+                <button id="export-btn" class="btn-export">📥 Export รวมแผ่นเดียว</button>
+                <button id="export-club-btn" class="btn-export" style="background:#007bff;">🎪 Export แยกแท็บชุมนุม</button>
+                <button id="export-room-btn" class="btn-export" style="background:#17a2b8;">🚪 Export แยกแท็บห้องเรียน</button>
             </div>
 
             <span id="student-count" style="font-weight:bold; color:#007bff; display:block; margin-bottom:8px;"></span>
@@ -125,7 +123,6 @@
         </div>
     </div>
 
-    <!-- MODAL เพิ่มนักเรียน -->
     <div id="add-modal" class="modal-overlay">
         <div class="modal-box">
             <h3>➕ เพิ่มนักเรียนเข้าชุมนุม</h3>
@@ -168,7 +165,7 @@
                 </div>
             </div>
 
-            <div id="modal-status" style="min-height:20px; font-size:13px; margin-bottom:8px;"></div>
+            <div id="add-modal-status" style="min-height:20px; font-size:13px; margin-bottom:8px;"></div>
 
             <div class="modal-actions">
                 <button class="btn-cancel" id="modal-cancel">ยกเลิก</button>
@@ -177,7 +174,6 @@
         </div>
     </div>
 
-    <!-- CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -227,6 +223,21 @@
         function getLevel(classroom) {
             const grade = parseInt(String(classroom).split('/')[0]);
             return grade <= 3 ? 'ม.ต้น' : 'ม.ปลาย';
+        }
+
+        // ฟังก์ชันช่วยจัด Format แถวข้อมูลสำหรับส่งออก Excel
+        function formatExcelRow(row, index) {
+            return {
+                'ลำดับ': index + 1,
+                'เวลาลงทะเบียน': row.timestamp || '',
+                'อีเมล': row.email || '',
+                'เลขประจำตัว': row.studentId || '',
+                'ชื่อ-นามสกุล': row.name || '',
+                'ระดับ': getLevel(row.classroom),
+                'ห้อง': row.classroom || '',
+                'เลขที่': row.no || '',
+                'ชุมนุม': row.club || ''
+            };
         }
 
         // ==================== Login ====================
@@ -350,25 +361,79 @@
             }
         }
 
-        // ==================== Export Excel ====================
+        // ==================== Export รวมทั้งหมดแผ่นเดียว ====================
         function exportExcel() {
             if (allData.length === 0) { alert('ไม่มีข้อมูลสำหรับ Export'); return; }
-            const excelData = allData.map((row, i) => ({
-                'ลำดับ': i + 1,
-                'เวลาลงทะเบียน': row.timestamp || '',
-                'อีเมล': row.email || '',
-                'เลขประจำตัว': row.studentId || '',
-                'ชื่อ-นามสกุล': row.name || '',
-                'ระดับ': getLevel(row.classroom),
-                'ห้อง': row.classroom || '',
-                'เลขที่': row.no || '',
-                'ชุมนุม': row.club || ''
-            }));
+            const excelData = allData.map((row, i) => formatExcelRow(row, i));
             const ws = XLSX.utils.json_to_sheet(excelData);
             ws['!cols'] = [{wch:8},{wch:22},{wch:28},{wch:15},{wch:30},{wch:8},{wch:8},{wch:8},{wch:50}];
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'รายชื่อนักเรียน');
-            XLSX.writeFile(wb, `รายงานการลงทะเบียนชุมนุม_${new Date().toLocaleDateString('th-TH')}.xlsx`);
+            XLSX.utils.book_append_sheet(wb, ws, 'รายชื่อนักเรียนทั้งหมด');
+            XLSX.writeFile(wb, `รายงานการลงทะเบียนชุมนุม_รวมทั้งหมด_${new Date().toLocaleDateString('th-TH').replace(/\//g, '-')}.xlsx`);
+        }
+
+        // ==================== Export แยกแท็บตามชุมนุม ====================
+        function exportExcelByClub() {
+            if (allData.length === 0) { alert('ไม่มีข้อมูลสำหรับ Export'); return; }
+            const wb = XLSX.utils.book_new();
+            
+            // จัดกลุ่มข้อมูลแยกตามชุมนุม
+            const clubsGroup = {};
+            allData.forEach(row => {
+                const clubName = row.club || 'ไม่ระบุชุมนุม';
+                if (!clubsGroup[clubName]) clubsGroup[clubName] = [];
+                clubsGroup[clubName].push(row);
+            });
+            
+            // วนลูปสร้างแผ่นงาน (Sheet) ให้แต่ละชุมนุม
+            Object.keys(clubsGroup).sort().forEach(clubName => {
+                // จัดอันดับเรียงลำดับห้องและเลขที่ใหม่ภายในกลุ่มชุมนุมนั้นๆ
+                const sortedRows = clubsGroup[clubName].sort((a,b) => {
+                    if(a.classroom !== b.classroom) return String(a.classroom).localeCompare(String(b.classroom));
+                    return parseInt(a.no) - parseInt(b.no);
+                });
+                
+                const sData = sortedRows.map((row, i) => formatExcelRow(row, i));
+                const ws = XLSX.utils.json_to_sheet(sData);
+                ws['!cols'] = [{wch:8},{wch:22},{wch:28},{wch:15},{wch:30},{wch:8},{wch:8},{wch:8},{wch:50}];
+                
+                // ตกแต่งชื่อแท็บ (ห้ามยาวเกิน 31 ตัวอักษร และห้ามมีอักขระพิเศษ)
+                let sheetName = clubName.split(' (')[0]; 
+                sheetName = sheetName.replace(/[:\\\/\?\*\[\]]/g, '_').substring(0, 30);
+                
+                XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            });
+            
+            XLSX.writeFile(wb, `รายงานนักเรียน_แยกตามชุมนุม_${new Date().toLocaleDateString('th-TH').replace(/\//g, '-')}.xlsx`);
+        }
+
+        // ==================== Export แยกแท็บตามห้องเรียน ====================
+        function exportExcelByClassroom() {
+            if (allData.length === 0) { alert('ไม่มีข้อมูลสำหรับ Export'); return; }
+            const wb = XLSX.utils.book_new();
+            
+            // จัดกลุ่มข้อมูลแยกตามห้องเรียน
+            const roomGroup = {};
+            allData.forEach(row => {
+                const room = row.classroom || 'ไม่ระบุห้อง';
+                if (!roomGroup[room]) roomGroup[room] = [];
+                roomGroup[room].push(row);
+            });
+            
+            // เรียงลำดับชื่อห้องเรียนให้สวยงาม (ม.1 ไปถึง ม.6)
+            const sortedRooms = Object.keys(roomGroup).sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
+            
+            // วนลูปสร้างแท็บแยกห้องเรียน
+            sortedRooms.forEach(room => {
+                const sData = roomGroup[room].map((row, i) => formatExcelRow(row, i));
+                const ws = XLSX.utils.json_to_sheet(sData);
+                ws['!cols'] = [{wch:8},{wch:22},{wch:28},{wch:15},{wch:30},{wch:8},{wch:8},{wch:8},{wch:50}];
+                
+                let sheetName = `ห้อง ${room.replace('/', '_')}`;
+                XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            });
+            
+            XLSX.writeFile(wb, `รายงานนักเรียน_แยกตามห้องเรียน_${new Date().toLocaleDateString('th-TH').replace(/\//g, '-')}.xlsx`);
         }
 
         // ==================== เวลา ====================
@@ -423,7 +488,7 @@
             document.getElementById('modal-email').value = '';
             document.getElementById('modal-classroom').value = '';
             document.getElementById('modal-no').value = '';
-            document.getElementById('modal-status').innerText = '';
+            document.getElementById('add-modal-status').innerText = '';
             document.getElementById('add-modal').classList.add('show');
         }
 
@@ -438,7 +503,7 @@
             const email     = document.getElementById('modal-email').value.trim();
             const classroom = document.getElementById('modal-classroom').value;
             const no        = document.getElementById('modal-no').value.trim();
-            const statusEl  = document.getElementById('modal-status');
+            const statusEl  = document.getElementById('add-modal-status');
 
             if (!clubName)  { statusEl.innerHTML = '<span style="color:red;">❌ กรุณาเลือกชุมนุม</span>'; return; }
             if (!name)      { statusEl.innerHTML = '<span style="color:red;">❌ กรุณากรอกชื่อ-นามสกุล</span>'; return; }
@@ -516,7 +581,12 @@
             });
             document.getElementById('logout-btn').addEventListener('click', logout);
             document.getElementById('save-time-btn').addEventListener('click', saveTime);
+            
+            // ผูกเหตุการณ์ปุ่ม Export ทั้ง 3 รูปแบบ
             document.getElementById('export-btn').addEventListener('click', exportExcel);
+            document.getElementById('export-club-btn').addEventListener('click', exportExcelByClub);
+            document.getElementById('export-room-btn').addEventListener('click', exportExcelByClassroom);
+            
             document.getElementById('adminSearch').addEventListener('keyup', searchTable);
             document.getElementById('filter-all').addEventListener('click', () => filterByLevel('all'));
             document.getElementById('filter-junior').addEventListener('click', () => filterByLevel('junior'));
