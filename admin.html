@@ -16,7 +16,7 @@
         th, td { padding:10px 12px; border:1px solid #eee; text-align:left; font-size:13px; }
         th { background-color:var(--br-red, #c0392b); color:white; }
         .club-cell { font-weight:bold; color:var(--br-red, #c0392b); }
-        .btn-export { background:#28a745; color:white; border:none; padding:10px 15px; border-radius:5px; cursor:pointer; }
+        .btn-export { background:#28a745; color:white; border:none; padding:10px 15px; border-radius:5px; cursor:pointer; font-weight:bold; }
         .btn-del { background:#dc3545; color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer; }
         .btn-sub { padding:8px 15px; border:1px solid var(--br-red, #c0392b); background:white; color:var(--br-red, #c0392b); border-radius:5px; cursor:pointer; }
         .btn-sub.active { background:var(--br-red, #c0392b); color:white; }
@@ -107,7 +107,10 @@
                     <button id="filter-senior" class="btn-sub">ม.ปลาย</button>
                 </div>
                 <input type="text" id="adminSearch" placeholder="ค้นหา ชื่อ / เลขประจำตัว / ชุมนุม...">
-                <button id="export-btn" class="btn-export">📥 Export to Excel</button>
+                
+                <button id="export-btn" class="btn-export">📥 Export รวมแผ่นเดียว</button>
+                <button id="export-club-btn" class="btn-export" style="background:#007bff;">🎪 Export แยกแท็บชุมนุม</button>
+                <button id="export-room-btn" class="btn-export" style="background:#17a2b8;">🚪 Export แยกแท็บห้องเรียน</button>
             </div>
 
             <span id="student-count" style="font-weight:bold; color:#007bff; display:block; margin-bottom:8px;"></span>
@@ -238,6 +241,21 @@
             return grade <= 3 ? 'ม.ต้น' : 'ม.ปลาย';
         }
 
+        // จัด Format แถวข้อมูลสำหรับส่งออก Excel
+        function formatExcelRow(row, index) {
+            return {
+                'ลำดับ': index + 1,
+                'เวลาลงทะเบียน': row.timestamp || '',
+                'อีเมล': row.email || '',
+                'เลขประจำตัว': row.studentId || '',
+                'ชื่อ-นามสกุล': row.name || '',
+                'ระดับ': getLevel(row.classroom),
+                'ห้อง': row.classroom || '',
+                'เลขที่': row.no || '',
+                'ชุมนุม': row.club || ''
+            };
+        }
+
         // ==================== Login ====================
         function checkAdminLogin() {
             const pass  = document.getElementById('admin-password').value;
@@ -266,7 +284,7 @@
                     allData = [];
                     tbody.innerHTML = "<tr><td colspan='10' style='text-align:center; padding:20px; color:#999;'>ยังไม่มีข้อมูลการลงทะเบียน</td></tr>";
                     document.getElementById('student-count').innerText = 'จำนวนนักเรียน: 0 คน';
-                    populateDangerClubSelect(); // เคลียร์ตัวเลือกชุมนุม
+                    populateDangerClubSelect();
                     return;
                 }
                 const raw = snap.val();
@@ -395,22 +413,18 @@
             if (confirmPass !== "brclub112") { alert('❌ รหัสผ่านไม่ถูกต้อง ยกเลิกคำสั่งลบข้อมูล'); return; }
 
             try {
-                // กรองหานักเรียนทุกคนที่ลงทะเบียนในชุมนุมนี้ไว้
                 const targets = allData.filter(row => row.club === clubName);
                 if (targets.length === 0) { alert('ไม่พบรายชื่อนักเรียนในชุมนุมนี้ในระบบอยู่แล้วครับ'); return; }
 
                 const updates = {};
-                // มาร์คค่าให้นักเรียนเหล่านั้นเป็น null เพื่อทำการลบออกในคำสั่งเดียว
                 targets.forEach(student => {
                     const studentKey = toKey(student.studentId);
                     updates[`registrations/${studentKey}`] = null;
                 });
                 
-                // สั่งเซ็ตยอดนับจำนวนคนสมัครของชุมนุมนี้กลับเป็น 0
                 const clubKey = toKey(clubName);
                 updates[`clubs/${clubKey}/count`] = 0;
 
-                // ทำการอัปเดตแบบ Multi-path ไปยัง Firebase ในครั้งเดียว (ประหยัดพลังงานระบบ)
                 await db.ref().update(updates);
                 
                 alert(`✅ ลบรายชื่อนักเรียนในชุมนุม "${clubName}" และรีเซ็ตโควตากลับเป็น 0 คนสำเร็จแล้ว!`);
@@ -429,7 +443,6 @@
             if (confirmPass !== "brclub112") { alert('❌ รหัสผ่านไม่ถูกต้อง ยกเลิกคำสั่งล้างระบบ'); return; }
 
             try {
-                // ลบโหนด registrations และ clubs ออกเพื่อให้ตัวนับทุกตัวรีเซ็ตเป็นศูนย์ใหม่ทั้งหมด
                 await db.ref('registrations').remove();
                 await db.ref('clubs').remove();
                 
@@ -440,25 +453,71 @@
             }
         }
 
-        // ==================== Export Excel ====================
+        // ==================== Export รวมทั้งหมดแผ่นเดียว ====================
         function exportExcel() {
             if (allData.length === 0) { alert('ไม่มีข้อมูลสำหรับ Export'); return; }
-            const excelData = allData.map((row, i) => ({
-                'ลำดับ': i + 1,
-                'เวลาลงทะเบียน': row.timestamp || '',
-                'อีเมล': row.email || '',
-                'เลขประจำตัว': row.studentId || '',
-                'ชื่อ-นามสกุล': row.name || '',
-                'ระดับ': getLevel(row.classroom),
-                'ห้อง': row.classroom || '',
-                'เลขที่': row.no || '',
-                'ชุมนุม': row.club || ''
-            }));
+            const excelData = allData.map((row, i) => formatExcelRow(row, i));
             const ws = XLSX.utils.json_to_sheet(excelData);
             ws['!cols'] = [{wch:8},{wch:22},{wch:28},{wch:15},{wch:30},{wch:8},{wch:8},{wch:8},{wch:50}];
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'รายชื่อนักเรียน');
-            XLSX.writeFile(wb, `รายงานการลงทะเบียนชุมนุม_${new Date().toLocaleDateString('th-TH').replace(/\//g, '-')}.xlsx`);
+            XLSX.utils.book_append_sheet(wb, ws, 'รายชื่อนักเรียนทั้งหมด');
+            XLSX.writeFile(wb, `รายงานการลงทะเบียนชุมนุม_รวมทั้งหมด_${new Date().toLocaleDateString('th-TH').replace(/\//g, '-')}.xlsx`);
+        }
+
+        // ==================== Export แยกแท็บตามชุมนุม ====================
+        function exportExcelByClub() {
+            if (allData.length === 0) { alert('ไม่มีข้อมูลสำหรับ Export'); return; }
+            const wb = XLSX.utils.book_new();
+            
+            const clubsGroup = {};
+            allData.forEach(row => {
+                const clubName = row.club || 'ไม่ระบุชุมนุม';
+                if (!clubsGroup[clubName]) clubsGroup[clubName] = [];
+                clubsGroup[clubName].push(row);
+            });
+            
+            Object.keys(clubsGroup).sort().forEach(clubName => {
+                const sortedRows = clubsGroup[clubName].sort((a,b) => {
+                    if(a.classroom !== b.classroom) return String(a.classroom).localeCompare(String(b.classroom));
+                    return parseInt(a.no) - parseInt(b.no);
+                });
+                
+                const sData = sortedRows.map((row, i) => formatExcelRow(row, i));
+                const ws = XLSX.utils.json_to_sheet(sData);
+                ws['!cols'] = [{wch:8},{wch:22},{wch:28},{wch:15},{wch:30},{wch:8},{wch:8},{wch:8},{wch:50}];
+                
+                let sheetName = clubName.split(' (')[0]; 
+                sheetName = sheetName.replace(/[:\\\/\?\*\[\]]/g, '_').substring(0, 30);
+                XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            });
+            
+            XLSX.writeFile(wb, `รายงานนักเรียน_แยกตามชุมนุม_${new Date().toLocaleDateString('th-TH').replace(/\//g, '-')}.xlsx`);
+        }
+
+        // ==================== Export แยกแท็บตามห้องเรียน ====================
+        function exportExcelByClassroom() {
+            if (allData.length === 0) { alert('ไม่มีข้อมูลสำหรับ Export'); return; }
+            const wb = XLSX.utils.book_new();
+            
+            const roomGroup = {};
+            allData.forEach(row => {
+                const room = row.classroom || 'ไม่ระบุห้อง';
+                if (!roomGroup[room]) roomGroup[room] = [];
+                roomGroup[room].push(row);
+            });
+            
+            const sortedRooms = Object.keys(roomGroup).sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
+            
+            sortedRooms.forEach(room => {
+                const sData = roomGroup[room].map((row, i) => formatExcelRow(row, i));
+                const ws = XLSX.utils.json_to_sheet(sData);
+                ws['!cols'] = [{wch:8},{wch:22},{wch:28},{wch:15},{wch:30},{wch:8},{wch:8},{wch:8},{wch:50}];
+                
+                let sheetName = `ห้อง ${room.replace('/', '_')}`;
+                XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            });
+            
+            XLSX.writeFile(wb, `รายงานนักเรียน_แยกตามห้องเรียน_${new Date().toLocaleDateString('th-TH').replace(/\//g, '-')}.xlsx`);
         }
 
         // ==================== เวลา ====================
@@ -496,7 +555,6 @@
 
         // ==================== Modal เพิ่มนักเรียน ====================
         function openAddModal() {
-            // populate classroom dropdown
             const sel = document.getElementById('modal-classroom');
             sel.innerHTML = '<option value="">-- เลือกห้อง --</option>';
             for (let g = 1; g <= 6; g++) {
@@ -506,7 +564,6 @@
                     sel.add(opt);
                 }
             }
-            // clear fields
             document.getElementById('modal-club').value = '';
             document.getElementById('modal-name').value = '';
             document.getElementById('modal-studentId').value = '';
@@ -546,7 +603,6 @@
             const capacity   = adminClubs[clubName] || 999;
 
             try {
-                // ตรวจสอบ duplicate
                 const existSnap = await db.ref(`registrations/${studentKey}`).get();
                 if (existSnap.exists()) {
                     statusEl.innerHTML = '<span style="color:red;">⚠️ เลขประจำตัวนี้ลงทะเบียนไปแล้ว</span>';
@@ -555,7 +611,6 @@
                     return;
                 }
 
-                // ตรวจสอบ capacity
                 let full = false;
                 await db.ref(`clubs/${clubKey}/count`).transaction(current => {
                     const count = current || 0;
@@ -606,7 +661,11 @@
             });
             document.getElementById('logout-btn').addEventListener('click', logout);
             document.getElementById('save-time-btn').addEventListener('click', saveTime);
+            
+            // ผูกเหตุการณ์ปุ่ม Export ทั้ง 3 รูปแบบ
             document.getElementById('export-btn').addEventListener('click', exportExcel);
+            document.getElementById('export-club-btn').addEventListener('click', exportExcelByClub);
+            document.getElementById('export-room-btn').addEventListener('click', exportExcelByClassroom);
             
             // ผูกเหตุการณ์ปุ่มการล้างข้อมูลชุมนุมใหม่
             document.getElementById('clear-club-btn').addEventListener('click', clearClubData);
