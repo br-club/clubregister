@@ -80,7 +80,7 @@ const clubsJunior = [
     { name: "หมากกระดาน (นายภัทรรัตน์ ปิยะภัทรสกุล / นายธนภูมิ ท้าวมะลิ)", capacity: 25 },
     { name: "พิมพ์ดีด-พิมพ์ใจ (นางสาวณัชชนม์ สุวรรณธาดา / นางสาวนพพร วาอุทัศน์ / นายสุทธิพันธ์ สาหมีด)", capacity: 25 },
     { name: "ภารกิจพิชิตดิจิทัล (นางจิตราภรณ์ บัวจำรัส / นางสาวเพชรรัตน์ มหรรชกุล)", capacity: 25 },
-    { name: "Crossword: To Be The Star (นางสาวปนิตา ยืนยาว / นายคณิน รักเกียรติสกุล / นางอรวรรณ แสแสงสีรุ้ง)", capacity: 25 },
+    { name: "Crossword: To Be The Star (นางสาวปปนิตา ยืนยาว / นายคณิน รักเกียรติสกุล / นางอรวรรณ แสแสงสีรุ้ง)", capacity: 25 },
     { name: "ครูสาวน่าอีส (นางสาวสุดารัตน์ พลโภชน์ / นายธนิสร ศิริกุล)", capacity: 25 },
     { name: "English Club (Keith Pearson / Jack Batty Sewina / Steven Kiyooka)", capacity: 25 },
     { name: "ภาษา พาที (นางสาวลินดา เนียมเพราะ / นางสาวปัญญาพร พลีดี / นางสาวโชติกา ไตรเภทพิสัย)", capacity: 25 },
@@ -113,28 +113,28 @@ const clubsSenior = [
     { name: "TED Talks x BR (นางสาวดารากันย์ เจริญจิต / นางสาวนิตยา อาจเดช)", capacity: 40 },
     { name: "เล่นให้เป็นคน (นายตรัยรัตน์ บุญพา / นายธนพล ห้วยหงษ์ทอง)", capacity: 40 },
     { name: "Drama and Film (นางสาวพิมพลอย รัตนมาศ / นายธิติพงศ์ จุรุฑา)", capacity: 40 },
-    { name: "รอบรู้รอบรั้วโรงเรียน (นายไพรัตน์ ลิ้มปองทรัพย์)", capacity: 30 },
+    { name: "รอบรู้รอบรั้วโรงเรียน (นายไไพรัตน์ ลิ้มปองทรัพย์)", capacity: 30 },
     { name: "Hello World: ท่องโลก 3 สไตล์ (นายวิทยา ศรีสร้อย / นางสาวพิมพ์พรรณ มโนมัยฤนาท)", capacity: 40 },
     { name: "อะไรจีน จีน (นางสาวจิรพร เข็มเพ็ชร์ / Miss Wang Fei)", capacity: 40 },
     { name: "วิทยากรรุ่นเยาว์ (นายรุ่งโรจน์ ติดมา)", capacity: 25 },
-    { name: "บาสเกตบอล (นายธวัชชัย ตั้งสุรธีรวงศ์ / นายพิฑูร กิจประเสริฐ)", capacity: 15 },
-    { name: "ชุมนุมกีฬาบริดจ์ (นายผดุงศักดิ์ บูรณะสมบัติ)", capacity: 15 },
-    { name: "หมากกระดาน (นายภัทรรัตน์ ปิยะภัทรสกุล / นายธนภูมิ ท้าวมะลิ)", capacity: 15 },
-    { name: "พิมพ์ดีด-พิมพ์ใจ (นางสาวณัชชนม์ สุวรรณธาดา / นางสาวนพพร วาอุทัศน์)", capacity: 15 },
-    { name: "ภารกิจพิชิตดิจิทัล (นางจิตราภรณ์ บัวจำรัส / นางสาวเพชรรัตน์ มหรรชกุล)", capacity: 15 },
-    { name: "Crossword: To Be The Star (นางสาวปนิตา ยืนยาว / นายคณิน รักเกียรติสกุล / นางอรวรรณ แสแสงสีรุ้ง)", capacity: 15 },
-    { name: "ครูสาวน่าอีส (นางสาวสุดารัตน์ พลโภชน์ / นายธนิสร ศิริกุล)", capacity: 15 },
-    { name: "English Club (Keith Pearson / Jack Batty Sewina / Steven Kiyooka)", capacity: 15 },
-    { name: "ภาษา พาที (นางสาวลินดา เนียมเพราะ / นางสาวปัญญาพร พลีดี / นางสาวโชติกา ไตรเภทพิสัย)", capacity: 15 },
-    { name: "มูเตลู (นางสาวณฐพรรณ เจนปัญญากุล / นายนาร์ท สายทองติ่ง)", capacity: 15 },
-    { name: "สร้างสรรค์ปั้นดินไทย (นางสาวโสรยา สุธาพจน์ / นางสาวศุภัสรา มิ่งแมน)", capacity: 15 },
-    { name: "ดนตรีไทย (ครูสุริยพงษ์ บุญโกมล)", capacity: 10 },
-    { name: "ศิลปะเพื่อการแข่งขัน (นางสาวจุฑามาศ ทิพยกระมล / นายทรงยศ คำอยู่)", capacity: 15 },
-    { name: "นาฏศิลป์ (นายเอกชัย แตบสวัสดิ์ / ครูนาฏศิลป์ อัตราจ้าง)", capacity: 15 },
-    { name: "วงโยธวาทิต (นายรุ่งโรจน์ ศรีสังข์ / นายยงยศ สง่าวงษ์)", capacity: 15 },
-    { name: "ว่ายน้ำ (นางสาววารินทร์ เกตุเกลี้ยง / นางสาวเบญญทิพย์ เขียวราชา)", capacity: 15 },
-    { name: "ส่งเสริมประชาธิปไตย (นางสาวศิริรัตน์ สงวนศรี / นายอาชวิน สร้อยจิต)", capacity: 22, adminOnly: true },
-    { name: "โอ้เอ้วิหารราย (นางสาวยุวดี ว่องสกุลกฤษฎา / นางสาวสว่างจิต แก้วถนัด / นายภควรรษ รอดความทุกข์)", capacity: 20 }
+    { name: "บาสเกตบอล ม.ปลาย (นายธวัชชัย ตั้งสุรธีรวงศ์ / นายพิฑูร กิจประเสริฐ)", capacity: 15 },
+    { name: "ชุมนุมกีฬาบริดจ์ ม.ปลาย (นายผดุงศักดิ์ บูรณะสมบัติ)", capacity: 25 },
+    { name: "หมากกระดาน ม.ปลาย (นายภัทรรัตน์ ปิยะภัทรสกุล / นายธนภูมิ ท้าวมะลิ)", capacity: 15 },
+    { name: "พิมพ์ดีด-พิมพ์ใจ ม.ปลาย (นางสาวณัชชนม์ สุวรรณธาดา / นางสาวนพพร วาอุทัศน์)", capacity: 15 },
+    { name: "ภารกิจพิชิตดิจิทัล ม.ปลาย (นางจิตราภรณ์ บัวจำรัส / นางสาวเพชรรัตน์ มหรรชกุล)", capacity: 15 },
+    { name: "Crossword: To Be The Star ม.ปลาย (นางสาวปนิตา ยืนยาว / นายคณิน รักเกียรติสกุล / นางอรวรรณ แสแสงสีรุ้ง)", capacity: 15 },
+    { name: "ครูสาวน่าอีส ม.ปลาย (นางสาวสุดารัตน์ พลโภชน์ / นายธนิสร ศิริกุล)", capacity: 15 },
+    { name: "English Club ม.ปลาย (Keith Pearson / Jack Batty Sewina / Steven Kiyooka)", capacity: 15 },
+    { name: "ภาษา พาที ม.ปลาย (นางสาวลินดา เนียมเพราะ / นางสาวปัญญาพร พลีดี / นางสาวโชติกา ไตรเภทพิสัย)", capacity: 15 },
+    { name: "มูเตลู ม.ปลาย (นางสาวณฐพรรณ เจนปัญญากุล / นายนาร์ท สายทองติ่ง)", capacity: 15 },
+    { name: "สร้างสรรค์ปั้นดินไทย ม.ปลาย (นางสาวโสรยา สุธาพจน์ / นางสาวศุภัสรา มิ่งแมน)", capacity: 15 },
+    { name: "ดนตรีไทย ม.ปลาย (ครูสุริยพงษ์ บุญโกมล)", capacity: 10 },
+    { name: "ศิลปะเพื่อการแข่งขัน ม.ปลาย (นางสาวจุฑามาศ ทิพยกระมล / นายทรงยศ คำอยู่)", capacity: 15 },
+    { name: "นาฏศิลป์ ม.ปลาย(นายเอกชัย แตบสวัสดิ์ / ครูนาฏศิลป์ อัตราจ้าง)", capacity: 15 },
+    { name: "วงโยธวาทิต ม.ปลาย (นายรุ่งโรจน์ ศรีสังข์ / นายยงยศ สง่าวงษ์)", capacity: 15 },
+    { name: "ว่ายน้ำ ม.ปลาย (นางสาววารินทร์ เกตุเกลี้ยง / นางสาวเบญญทิพย์ เขียวราชา)", capacity: 15 },
+    { name: "ส่งเสริมประชาธิปไตย ม.ปลาย (นางสาวศิริรัตน์ สงวนศรี / นายอาชวิน สร้อยจิต)", capacity: 22, adminOnly: true },
+    { name: "โอ้เอ้วิหารราย ม.ปลาย (นางสาวยุวดี ว่องสกุลกฤษฎา / นางสาวสว่างจิต แก้วถนัด / นายภควรรษ รอดความทุกข์)", capacity: 20 }
 ];
 
 // ==================== LOGIN ====================
@@ -166,11 +166,8 @@ async function handleLogin() {
         const result = await res.json();
 
         if (result.status === "ok") {
-            // ซ่อนหน้า Login และแสดงหน้า Registration
             document.getElementById('login-section').style.display = 'none';
             document.getElementById('registration-section').style.display = 'block';
-            
-            // ตรวจสอบว่าเคยลงทะเบียนหรือยัง (ฟังก์ชันจะจัดการแสดงฟอร์มให้อัตโนมัติ)
             await checkExistingEnrollment(id, email);
         } else {
             alert("❌ อีเมลหรือเลขประจำตัวไม่ถูกต้อง\nกรุณาตรวจสอบอีกครั้ง");
@@ -213,12 +210,10 @@ async function checkExistingEnrollment(studentId, email = '') {
                 <input type="hidden" id="email" value="${data.email || email}">
             `;
         } else {
-            // ถ้านักเรียนยังไม่เคยลงทะเบียน ให้แสดงฟอร์ม
             showRegistrationForm(studentId, email);
         }
     } catch (err) {
         console.error("checkExistingEnrollment error:", err);
-        // กรณีดึงข้อมูลมีปัญหา ให้แสดงฟอร์มไว้ก่อน
         showRegistrationForm(studentId, email);
     }
 }
@@ -308,7 +303,7 @@ async function selectLevel(level) {
 
     clubSelect.innerHTML = '<option value="">-- กรุณาเลือกชุมนุม --</option>';
     clubs.forEach(c => {
-        if (c.adminOnly) return; // ชุมนุมที่แอดมินจัดการเอง — ไม่แสดงให้นักเรียนเลือก
+        if (c.adminOnly) return; 
 
         const key    = toKey(c.name);
         const count  = (countsSnap[key] && countsSnap[key].count) ? countsSnap[key].count : 0;
@@ -361,7 +356,6 @@ async function handleSubmit(e) {
     if (e && e.preventDefault) e.preventDefault();
     const btn = document.getElementById('submit-btn');
     
-    // 🛡️ ป้องกันการลงทะเบียนซ้ำซ้อนจากการกดปุ่มเบิ้ลรัวๆ (Double Submit Shield)
     if (btn.disabled) return;
 
     setLoading(btn, true, "ยืนยันการลงทะเบียน");
@@ -381,7 +375,6 @@ async function handleSubmit(e) {
     if (!no)        { alert("❌ กรุณากรอกเลขที่");          setLoading(btn, false, "ยืนยันการลงทะเบียน"); return; }
     if (!clubName)  { alert("❌ กรุณาเลือกชุมนุม");         setLoading(btn, false, "ยืนยันการลงทะเบียน"); return; }
 
-    // ป้องกันการ submit ชุมนุม adminOnly โดยตรง (กันการโกง)
     const allClubs = [...clubsJunior, ...clubsSenior];
     const clubData = allClubs.find(c => c.name === clubName);
     if (clubData && clubData.adminOnly) {
@@ -444,7 +437,7 @@ async function handleSubmit(e) {
             timestamp, email, studentId, no, classroom, name, club: clubName
         });
 
-        // 5. ส่งข้อมูลไป Google Sheets ด้วย (background — ไม่บล็อกถ้า Sheets ช้าหรือ error)
+        // 5. ส่งข้อมูลไป Google Sheets
         try {
             const sheetsUrl = `${SCRIPT_URL}?action=write`
                 + `&timestamp=${encodeURIComponent(timestamp)}`
@@ -456,7 +449,6 @@ async function handleSubmit(e) {
                 + `&club=${encodeURIComponent(clubName)}`;
             await fetchWithTimeout(sheetsUrl, 10000);
         } catch (sheetsErr) {
-            // Sheets ล้มเหลวไม่กระทบ Firebase — บันทึกไว้ใน console เท่านั้น
             console.warn("Google Sheets sync failed (ไม่กระทบข้อมูลหลัก):", sheetsErr.message);
         }
 
@@ -487,8 +479,6 @@ function logoutStudent() {
     document.getElementById('login-section').style.display = 'block';
     document.getElementById('login-email').value = '';
     document.getElementById('login-id').value = '';
-    
-    // เคลียร์ข้อมูลฟอร์มลงทะเบียนเดิมออก เพื่อความปลอดภัย
     document.getElementById('registration-section').innerHTML = '';
 }
 

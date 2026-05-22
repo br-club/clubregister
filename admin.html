@@ -148,8 +148,8 @@
                     <label style="font-size:13px; font-weight:bold; display:block; margin-bottom:4px;">ชุมนุม (Admin Only)</label>
                     <select id="modal-club" style="padding:10px; border:1px solid #ddd; border-radius:5px; font-size:14px; width:100%;">
                         <option value="">-- เลือกชุมนุม --</option>
-                        <option value="ส่งเสริมประชาธิปไตย (นางสาวศิริรัตน์ สงวนศรี / นายอาชวิน สร้อยจิต)">ส่งเสริมประชาธิปไตย (ม.ต้น) — รับ 25 คน</option>
-                        <option value="ส่งเสริมประชาธิปไตย (นางสาวศิริรัตน์ สงวนศรี / นายอาชวิน สร้อยจิต) [ม.ปลาย]">ส่งเสริมประชาธิปไตย (ม.ปลาย) — รับ 15 คน</option>
+                        <option value="ส่งเสริมประชาธิปไตย (นางสาวศิริรัตน์ สงวนศรี / นายอาชวิน สร้อยจิต)">ส่งเสริมประชาธิปไตย (ม.ต้น) — รับ 6 คน</option>
+                        <option value="ส่งเสริมประชาธิปไตย ม.ปลาย (นางสาวศิริรัตน์ สงวนศรี / นายอาชวิน สร้อยจิต)">ส่งเสริมประชาธิปไตย (ม.ปลาย) — รับ 22 คน</option>
                     </select>
                 </div>
 
@@ -215,8 +215,8 @@
 
         // ชุมนุม admin-only พร้อม capacity
         const adminClubs = {
-            "ส่งเสริมประชาธิปไตย (นางสาวศิริรัตน์ สงวนศรี / นายอาชวิน สร้อยจิต)": 25,
-            "ส่งเสริมประชาธิปไตย (นางสาวศิริรัตน์ สงวนศรี / นายอาชวิน สร้อยจิต) [ม.ปลาย]": 15
+            "ส่งเสริมประชาธิปไตย (นางสาวศิริรัตน์ สงวนศรี / นายอาชวิน สร้อยจิต)": 6,
+            "ส่งเสริมประชาธิปไตย ม.ปลาย (นางสาวศิริรัตน์ สงวนศรี / นายอาชวิน สร้อยจิต)": 22
         };
 
         // ==================== helpers ====================
@@ -241,7 +241,6 @@
             return grade <= 3 ? 'ม.ต้น' : 'ม.ปลาย';
         }
 
-        // จัด Format แถวข้อมูลสำหรับส่งออก Excel
         function formatExcelRow(row, index) {
             return {
                 'ลำดับ': index + 1,
@@ -292,19 +291,17 @@
                     if (a.classroom !== b.classroom) return String(a.classroom).localeCompare(String(b.classroom));
                     return parseInt(a.no) - parseInt(b.no);
                 });
-                populateDangerClubSelect(); // อัปเดตรายชื่อชุมนุมใน Dropdown ตัวลบข้อมูล
+                populateDangerClubSelect();
                 filterByLevel(currentFilter);
             } catch (err) {
                 tbody.innerHTML = `<tr><td colspan='10' style='text-align:center; padding:20px; color:red;'>⚠️ โหลดไม่สำเร็จ: ${err.message}</td></tr>`;
             }
         }
 
-        // ==================== ดึงรายชื่อชุมนุมที่ลงทะเบียนไว้มาใส่ Dropdown ลบข้อมูล ====================
         function populateDangerClubSelect() {
             const select = document.getElementById('danger-club-select');
             if (!select) return;
             
-            // หาชื่อชุมนุมที่ไม่ซ้ำกันที่มีนักเรียนเคยลงทะเบียนไว้
             const uniqueClubs = [...new Set(allData.map(row => row.club).filter(Boolean))];
             
             select.innerHTML = '<option value="">-- เลือกชุมนุมที่ต้องการลบรายชื่อ --</option>';
@@ -352,7 +349,6 @@
             });
         }
 
-        // ==================== ค้นหา ====================
         function searchTable() {
             const q = document.getElementById('adminSearch').value.toLowerCase();
             const rows = document.getElementById('adminTableBody').getElementsByTagName('tr');
@@ -361,7 +357,6 @@
             }
         }
 
-        // ==================== filter ====================
         function filterByLevel(level) {
             currentFilter = level;
             document.querySelectorAll('.btn-sub').forEach(b => b.classList.remove('active'));
@@ -401,7 +396,7 @@
             }
         }
 
-        // ==================== 🚨 ลบนักเรียนทั้งหมดในชุมนุมที่เลือก ====================
+        // ==================== ลบนักเรียนทั้งหมดในชุมนุมที่เลือก ====================
         async function clearClubData() {
             const clubName = document.getElementById('danger-club-select').value;
             if (!clubName) { alert('❌ กรุณาเลือกชุมนุมที่ต้องการลบข้อมูลก่อนครับ'); return; }
@@ -434,7 +429,7 @@
             }
         }
 
-        // ==================== 🚨 ลบข้อมูลการลงทะเบียนทั้งหมด (Reset ทั้งระบบ) ====================
+        // ==================== ลบข้อมูลการลงทะเบียนทั้งหมด (Reset ทั้งระบบ) ====================
         async function clearAllData() {
             if (!confirm('⚠️ คำเตือนร้ายแรง: คุณกำลังจะลบรายชื่อนักเรียนทุกคน ทุกห้อง ทุกชุมนุม ออกจากระบบระบบทั้งหมด! ใช่หรือไม่?')) return;
             if (!confirm('🚨 ยืนยันรอบที่ 2: ข้อมูลตารางการลงทะเบียนนักเรียนทั้งหมดจะถูกเคลียร์ว่าง และรีเซ็ตโควตาทุกชุมนุมเป็น 0 (ไม่สามารถกู้คืนได้) ยืนยันหรือไม่?')) return;
@@ -453,7 +448,7 @@
             }
         }
 
-        // ==================== Export รวมทั้งหมดแผ่นเดียว ====================
+        // ==================== Excel Export ====================
         function exportExcel() {
             if (allData.length === 0) { alert('ไม่มีข้อมูลสำหรับ Export'); return; }
             const excelData = allData.map((row, i) => formatExcelRow(row, i));
@@ -464,7 +459,6 @@
             XLSX.writeFile(wb, `รายงานการลงทะเบียนชุมนุม_รวมทั้งหมด_${new Date().toLocaleDateString('th-TH').replace(/\//g, '-')}.xlsx`);
         }
 
-        // ==================== Export แยกแท็บตามชุมนุม ====================
         function exportExcelByClub() {
             if (allData.length === 0) { alert('ไม่มีข้อมูลสำหรับ Export'); return; }
             const wb = XLSX.utils.book_new();
@@ -494,7 +488,6 @@
             XLSX.writeFile(wb, `รายงานนักเรียน_แยกตามชุมนุม_${new Date().toLocaleDateString('th-TH').replace(/\//g, '-')}.xlsx`);
         }
 
-        // ==================== Export แยกแท็บตามห้องเรียน ====================
         function exportExcelByClassroom() {
             if (allData.length === 0) { alert('ไม่มีข้อมูลสำหรับ Export'); return; }
             const wb = XLSX.utils.book_new();
@@ -644,7 +637,6 @@
             }
         }
 
-        // ==================== Logout ====================
         function logout() {
             sessionStorage.removeItem('adminLoggedIn');
             document.getElementById('admin-content').style.display = 'none';
@@ -662,12 +654,10 @@
             document.getElementById('logout-btn').addEventListener('click', logout);
             document.getElementById('save-time-btn').addEventListener('click', saveTime);
             
-            // ผูกเหตุการณ์ปุ่ม Export ทั้ง 3 รูปแบบ
             document.getElementById('export-btn').addEventListener('click', exportExcel);
             document.getElementById('export-club-btn').addEventListener('click', exportExcelByClub);
             document.getElementById('export-room-btn').addEventListener('click', exportExcelByClassroom);
             
-            // ผูกเหตุการณ์ปุ่มการล้างข้อมูลชุมนุมใหม่
             document.getElementById('clear-club-btn').addEventListener('click', clearClubData);
             document.getElementById('clear-all-btn').addEventListener('click', clearAllData);
             
@@ -679,7 +669,6 @@
             document.getElementById('modal-cancel').addEventListener('click', closeAddModal);
             document.getElementById('modal-confirm').addEventListener('click', saveAddStudent);
 
-            // ปิด modal ถ้าคลิกนอก box
             document.getElementById('add-modal').addEventListener('click', function(e) {
                 if (e.target === this) closeAddModal();
             });
