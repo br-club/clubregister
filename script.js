@@ -75,7 +75,7 @@ const clubsJunior = [
     { name: "A-Math & Four Stars (นายศาศวัต คงกะเรียน / นางสาวจันทร์จิรา นวกุล)", capacity: 40 },
     { name: "Chinese DIY (นางสาวลลิตา เกรียงเจริญศิริ / นางสาววิภาวี อนุจาผัด)", capacity: 40 },
     { name: "โลกศิลปะ (นายกฤษฎา วัฒนศิลป์)", capacity: 30 },
-    { name: "บาสเกตบอล (นายธวัชชัย ตั้งสุรธีรวงศ์ / นายพิฑูร กิจประเสริฐ)", capacity: 17 },
+    { name: "บาสเกตบอล (นายธวัชชัย ตั้งสุรธีรวงศ์ / นายพิฑูร กิจประเสริฐ)", capacity: 25 },
     { name: "ชุมนุมกีฬาบริดจ์ (นายผดุงศักดิ์ บูรณะสมบัติ)", capacity: 25 },
     { name: "หมากกระดาน (นายภัทรรัตน์ ปิยะภัทรสกุล / นายธนภูมิ ท้าวมะลิ)", capacity: 25 },
     { name: "พิมพ์ดีด-พิมพ์ใจ (นางสาวณัชชนม์ สุวรรณธาดา / นางสาวนพพร วาอุทัศน์ / นายสุทธิพันธ์ สาหมีด)", capacity: 25 },
@@ -113,11 +113,11 @@ const clubsSenior = [
     { name: "TED Talks x BR (นางสาวดารากันย์ เจริญจิต / นางสาวนิตยา อาจเดช)", capacity: 40 },
     { name: "เล่นให้เป็นคน (นายตรัยรัตน์ บุญพา / นายธนพล ห้วยหงษ์ทอง)", capacity: 40 },
     { name: "Drama and Film (นางสาวพิมพลอย รัตนมาศ / นายธิติพงศ์ จุรุฑา)", capacity: 40 },
-    { name: "รอบรู้รอบรั้วโรงเรียน (นายไพรัตน์ ลิ้มปองทรัพย์)", capacity: 30 },
+    { name: "รอบรู้รอบรั้วโรงเรียน (นายไไพรัตน์ ลิ้มปองทรัพย์)", capacity: 30 },
     { name: "Hello World: ท่องโลก 3 สไตล์ (นายวิทยา ศรีสร้อย / นางสาวพิมพ์พรรณ มโนมัยฤนาท)", capacity: 40 },
     { name: "อะไรจีน จีน (นางสาวจิรพร เข็มเพ็ชร์ / Miss Wang Fei)", capacity: 40 },
     { name: "วิทยากรรุ่นเยาว์ (นายรุ่งโรจน์ ติดมา)", capacity: 25 },
-    { name: "บาสเกตบอล ม.ปลาย (นายธวัชชัย ตั้งสุรธีรวงศ์ / นายพิฑูร กิจประเสริฐ)", capacity: 23 },
+    { name: "บาสเกตบอล ม.ปลาย (นายธวัชชัย ตั้งสุรธีรวงศ์ / นายพิฑูร กิจประเสริฐ)", capacity: 15 },
     { name: "ชุมนุมกีฬาบริดจ์ ม.ปลาย (นายผดุงศักดิ์ บูรณะสมบัติ)", capacity: 25 },
     { name: "หมากกระดาน ม.ปลาย (นายภัทรรัตน์ ปิยะภัทรสกุล / นายธนภูมิ ท้าวมะลิ)", capacity: 15 },
     { name: "พิมพ์ดีด-พิมพ์ใจ ม.ปลาย (นางสาวณัชชนม์ สุวรรณธาดา / นางสาวนพพร วาอุทัศน์)", capacity: 15 },
@@ -130,7 +130,7 @@ const clubsSenior = [
     { name: "สร้างสรรค์ปั้นดินไทย ม.ปลาย (นางสาวโสรยา สุธาพจน์ / นางสาวศุภัสรา มิ่งแมน)", capacity: 15 },
     { name: "ดนตรีไทย ม.ปลาย (ครูสุริยพงษ์ บุญโกมล)", capacity: 10 },
     { name: "ศิลปะเพื่อการแข่งขัน ม.ปลาย (นางสาวจุฑามาศ ทิพยกระมล / นายทรงยศ คำอยู่)", capacity: 15 },
-    { name: "นาฏศิลป์ ม.ปลาย(นายเอกชัย แตบสวัสดิ์ / ครูนาฏศิลป์ อัตราจ้าง)", capacity: 15 },
+    { name: "นาฏศิลป์ ม.ปลาย(นายเอกชัย แตบสวัสดิ์ / นางสาวศุุภิสรา กลิ่นหอม)", capacity: 15 },
     { name: "วงโยธวาทิต ม.ปลาย (นายรุ่งโรจน์ ศรีสังข์ / นายยงยศ สง่าวงษ์)", capacity: 15 },
     { name: "ว่ายน้ำ ม.ปลาย (นางสาววารินทร์ เกตุเกลี้ยง / นางสาวเบญญทิพย์ เขียวราชา)", capacity: 15 },
     { name: "ส่งเสริมประชาธิปไตย ม.ปลาย (นางสาวศิริรัตน์ สงวนศรี / นายอาชวิน สร้อยจิต)", capacity: 22, adminOnly: true },
@@ -153,7 +153,6 @@ async function handleLogin() {
 
     const btn = document.querySelector('#login-section .btn-main');
     
-    // 🛡️ ป้องกันการกดปุ่มเข้าสู่ระบบซ้ำรัวๆ
     if (btn.disabled) return;
 
     setLoading(btn, true, "เข้าสู่ระบบ");
@@ -201,10 +200,7 @@ async function checkExistingEnrollment(studentId, email = '') {
                     <p style="color:#555;">ห้อง: ${data.classroom} เลขที่ ${data.no}</p>
                     <p style="color:#888; font-size:13px;">ลงทะเบียนเมื่อ: ${data.timestamp}</p>
                     <hr style="margin:20px 0;">
-                    <p style="color:#666; margin-bottom:15px;">ต้องการยกเลิกและเลือกชุมนุมใหม่?</p>
-                    <button onclick="cancelEnrollment()" id="cancel-btn" style="padding:10px 24px; background:#dc3545; color:white; border:none; border-radius:5px; cursor:pointer; font-size:16px;">
-                        ❌ ยกเลิกการลงทะเบียน
-                    </button>
+                    <p style="color:#dc3545; font-weight:bold; margin-bottom:15px;">🔒 ระบบไม่อนุญาตให้เปลี่ยนหรือยกเลิกชุมนุม</p>
                 </div>
                 <input type="hidden" id="studentId" value="${studentId}">
                 <input type="hidden" id="email" value="${data.email || email}">
@@ -215,35 +211,6 @@ async function checkExistingEnrollment(studentId, email = '') {
     } catch (err) {
         console.error("checkExistingEnrollment error:", err);
         showRegistrationForm(studentId, email);
-    }
-}
-
-// ==================== ยกเลิกการลงทะเบียน ====================
-async function cancelEnrollment() {
-    const studentId = document.getElementById('studentId').value;
-    const email     = document.getElementById('email').value;
-
-    if (!confirm("⚠️ ยืนยันการยกเลิกการลงทะเบียนชุมนุม?")) return;
-
-    const btn = document.getElementById('cancel-btn');
-    if (btn) {
-        if (btn.disabled) return;
-        setLoading(btn, true, "❌ ยกเลิกการลงทะเบียน");
-    }
-
-    try {
-        const snap = await dbGet(`registrations/${toKey(studentId)}`);
-        if (snap.exists()) {
-            const data    = snap.val();
-            const clubKey = toKey(data.club);
-            await dbRemove(`registrations/${toKey(studentId)}`);
-            await dbTransaction(`clubs/${clubKey}/count`, (current) => Math.max(0, (current || 0) - 1));
-        }
-        alert("✅ ยกเลิกการลงทะเบียนสำเร็จ กรุณาเลือกชุมนุมใหม่");
-        showRegistrationForm(studentId, email);
-    } catch (err) {
-        alert("⚠️ เกิดข้อผิดพลาด กรุณาลองใหม่: " + err.message);
-        if (btn) setLoading(btn, false, "❌ ยกเลิกการลงทะเบียน");
     }
 }
 
@@ -387,7 +354,6 @@ async function handleSubmit(e) {
     const studentKey = toKey(studentId);
 
     try {
-        // 1. ตรวจสอบเวลาเปิด-ปิด
         const grade    = parseInt(classroom.split('/')[0]);
         const isJunior = grade <= 3;
         try {
@@ -409,7 +375,6 @@ async function handleSubmit(e) {
             console.warn("getTime timeout/error, skipping:", timeErr.message);
         }
 
-        // 2. ตรวจสอบลงทะเบียนซ้ำ
         const existSnap = await dbGet(`registrations/${studentKey}`);
         if (existSnap.exists()) {
             alert("⚠️ คุณลงทะเบียนชุมนุมไปแล้ว ไม่สามารถลงซ้ำได้");
@@ -417,7 +382,6 @@ async function handleSubmit(e) {
             return;
         }
 
-        // 3. Transaction เพิ่ม count
         let full = false;
         await dbTransaction(`clubs/${clubKey}/count`, (current) => {
             const count = current || 0;
@@ -431,13 +395,11 @@ async function handleSubmit(e) {
             return;
         }
 
-        // 4. บันทึกข้อมูลนักเรียนลง Firebase
         const timestamp = new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' });
         await dbSet(`registrations/${studentKey}`, {
             timestamp, email, studentId, no, classroom, name, club: clubName
         });
 
-        // 5. ส่งข้อมูลไป Google Sheets
         try {
             const sheetsUrl = `${SCRIPT_URL}?action=write`
                 + `&timestamp=${encodeURIComponent(timestamp)}`
@@ -449,7 +411,7 @@ async function handleSubmit(e) {
                 + `&club=${encodeURIComponent(clubName)}`;
             await fetchWithTimeout(sheetsUrl, 10000);
         } catch (sheetsErr) {
-            console.warn("Google Sheets sync failed (ไม่กระทบข้อมูลหลัก):", sheetsErr.message);
+            console.warn("Google Sheets sync failed:", sheetsErr.message);
         }
 
         document.getElementById('registration-section').innerHTML = `
@@ -460,6 +422,7 @@ async function handleSubmit(e) {
                 <p style="color:#555;">ห้อง ${classroom} เลขที่ ${no}</p>
                 <p style="color:#888; font-size:13px;">เวลา: ${timestamp}</p>
                 <hr style="margin:20px 0;">
+                <p style="color:#dc3545; font-weight:bold; margin-bottom:15px;">🔒 ระบบไม่อนุญาตให้เปลี่ยนหรือยกเลิกชุมนุม</p>
                 <button onclick="logoutStudent()" style="padding:10px 24px; background:#6c757d; color:white; border:none; border-radius:5px; cursor:pointer; font-size:15px;">🚪 ออกจากระบบ</button>
             </div>`;
 

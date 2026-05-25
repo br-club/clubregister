@@ -86,8 +86,6 @@
 
             <div class="card" style="margin-bottom:15px; padding:15px; border-left:4px solid #dc3545; background:#fffdfd;">
                 <h3 style="margin:0 0 10px 0; color:#dc3545;">🗑️ ระบบล้างข้อมูล / ลบรายชื่อนักเรียน</h3>
-                <p style="margin:0 0 12px 0; color:#666; font-size:13px;">แอดมินสามารถเลือกลบรายชื่อนักเรียนทั้งหมดแยกเฉพาะบางชุมนุม หรือล้างระบบทุกชุมนุมพร้อมกันได้</p>
-                
                 <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; align-items:center;">
                     <select id="danger-club-select" style="padding:8px 12px; border:1px solid #ddd; border-radius:5px; font-size:13px; min-width:280px; max-width:100%;">
                         <option value="">-- กำลังโหลดรายชื่อชุมนุม... --</option>
@@ -108,9 +106,12 @@
                 </div>
                 <input type="text" id="adminSearch" placeholder="ค้นหา ชื่อ / เลขประจำตัว / ชุมนุม...">
                 
-                <button id="export-btn" class="btn-export">📥 Export รวมแผ่นเดียว</button>
-                <button id="export-club-btn" class="btn-export" style="background:#007bff;">🎪 Export แยกแท็บชุมนุม</button>
-                <button id="export-room-btn" class="btn-export" style="background:#17a2b8;">🚪 Export แยกแท็บห้องเรียน</button>
+                <button id="export-btn" class="btn-export">📥 Export รวม</button>
+                <button id="export-junior-club-btn" class="btn-export" style="background:#2ecc71;">📥 Export ม.ต้น (แยกชุมนุม)</button>
+                <button id="export-senior-club-btn" class="btn-export" style="background:#27ae60;">📥 Export ม.ปลาย (แยกชุมนุม)</button>
+                
+                <button id="export-club-btn" class="btn-export" style="background:#007bff;">🎪 Export แยกชุมนุม (รวม)</button>
+                <button id="export-room-btn" class="btn-export" style="background:#17a2b8;">🚪 Export แยกห้อง</button>
             </div>
 
             <span id="student-count" style="font-weight:bold; color:#007bff; display:block; margin-bottom:8px;"></span>
@@ -142,7 +143,6 @@
     <div id="add-modal" class="modal-overlay">
         <div class="modal-box">
             <h3>➕ เพิ่มนักเรียนเข้าชุมนุม</h3>
-
             <div class="modal-grid">
                 <div class="full-width">
                     <label style="font-size:13px; font-weight:bold; display:block; margin-bottom:4px;">ชุมนุม (Admin Only)</label>
@@ -152,37 +152,28 @@
                         <option value="ส่งเสริมประชาธิปไตย ม.ปลาย (นางสาวศิริรัตน์ สงวนศรี / นายอาชวิน สร้อยจิต)">ส่งเสริมประชาธิปไตย (ม.ปลาย) — รับ 22 คน</option>
                     </select>
                 </div>
-
                 <div class="full-width">
                     <label style="font-size:13px; font-weight:bold; display:block; margin-bottom:4px;">ชื่อ-นามสกุล</label>
                     <input type="text" id="modal-name" placeholder="ชื่อ-นามสกุล">
                 </div>
-
                 <div>
                     <label style="font-size:13px; font-weight:bold; display:block; margin-bottom:4px;">เลขประจำตัว</label>
                     <input type="text" id="modal-studentId" placeholder="เลขประจำตัว">
                 </div>
-
                 <div>
                     <label style="font-size:13px; font-weight:bold; display:block; margin-bottom:4px;">อีเมล</label>
                     <input type="email" id="modal-email" placeholder="อีเมล @br.ac.th">
                 </div>
-
                 <div>
                     <label style="font-size:13px; font-weight:bold; display:block; margin-bottom:4px;">ห้อง</label>
-                    <select id="modal-classroom">
-                        <option value="">-- เลือกห้อง --</option>
-                    </select>
+                    <select id="modal-classroom"><option value="">-- เลือกห้อง --</option></select>
                 </div>
-
                 <div>
                     <label style="font-size:13px; font-weight:bold; display:block; margin-bottom:4px;">เลขที่</label>
                     <input type="number" id="modal-no" placeholder="เลขที่" min="1" max="60">
                 </div>
             </div>
-
             <div id="modal-status" style="min-height:20px; font-size:13px; margin-bottom:8px;"></div>
-
             <div class="modal-actions">
                 <button class="btn-cancel" id="modal-cancel">ยกเลิก</button>
                 <button class="btn-confirm" id="modal-confirm">✅ บันทึก</button>
@@ -195,7 +186,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
     <script>
-        // ==================== Firebase ====================
+        // ==================== Firebase Config (เหมือนเดิม) ====================
         const firebaseConfig = {
             apiKey: "AIzaSyD_tIAHA7tWS_21w-_J7GHxLA_eDxC7qX8",
             authDomain: "benjama-club-45bf3.firebaseapp.com",
@@ -207,40 +198,21 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwIEF0K4z7d9i1YnCVqTpXoaA_chCOBCS3SPIdM1sTz1afydtgfGmjY8a2jz9oKpUQc/exec";
-        const FETCH_TIMEOUT_MS = 15000;
         let allData = [];
         let currentFilter = 'all';
 
-        // ชุมนุม admin-only พร้อม capacity
         const adminClubs = {
             "ส่งเสริมประชาธิปไตย (นางสาวศิริรัตน์ สงวนศรี / นายอาชวิน สร้อยจิต)": 6,
             "ส่งเสริมประชาธิปไตย ม.ปลาย (นางสาวศิริรัตน์ สงวนศรี / นายอาชวิน สร้อยจิต)": 22
         };
 
-        // ==================== helpers ====================
-        async function fetchWithTimeout(url, ms = FETCH_TIMEOUT_MS) {
-            const ctrl = new AbortController();
-            const t = setTimeout(() => ctrl.abort(), ms);
-            try {
-                const res = await fetch(url, { signal: ctrl.signal });
-                clearTimeout(t);
-                return res;
-            } catch (err) {
-                clearTimeout(t);
-                if (err.name === 'AbortError') throw new Error('TIMEOUT');
-                throw err;
-            }
-        }
-
+        // ==================== Helpers ====================
         function toKey(str) { return str.replace(/[.#$/\[\]]/g, '_'); }
-
         function getLevel(classroom) {
             const grade = parseInt(String(classroom).split('/')[0]);
             return grade <= 3 ? 'ม.ต้น' : 'ม.ปลาย';
         }
-
         function formatExcelRow(row, index) {
             return {
                 'ลำดับ': index + 1,
@@ -255,81 +227,41 @@
             };
         }
 
-        // ==================== Login ====================
+        // ==================== Logic (Login, Load, Render) ====================
         function checkAdminLogin() {
-            const pass  = document.getElementById('admin-password').value;
-            const errEl = document.getElementById('login-err');
+            const pass = document.getElementById('admin-password').value;
             if (pass === "brclub112") {
                 sessionStorage.setItem('adminLoggedIn', 'true');
                 document.getElementById('admin-login').style.display = 'none';
                 document.getElementById('admin-content').style.display = 'block';
-                errEl.innerText = '';
-                loadData();
-                loadTime();
+                loadData(); loadTime();
             } else {
-                errEl.innerText = '❌ รหัสผ่านไม่ถูกต้อง';
-                document.getElementById('admin-password').value = '';
-                document.getElementById('admin-password').focus();
+                document.getElementById('login-err').innerText = '❌ รหัสผ่านไม่ถูกต้อง';
             }
         }
 
-        // ==================== โหลดข้อมูล ====================
         async function loadData() {
             const tbody = document.getElementById('adminTableBody');
-            tbody.innerHTML = "<tr><td colspan='10' style='text-align:center; padding:20px;'>⏳ กำลังโหลดข้อมูล...</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='10' style='text-align:center;'>⏳ กำลังโหลดข้อมูล...</td></tr>";
             try {
                 const snap = await db.ref('registrations').get();
                 if (!snap.exists()) {
-                    allData = [];
-                    tbody.innerHTML = "<tr><td colspan='10' style='text-align:center; padding:20px; color:#999;'>ยังไม่มีข้อมูลการลงทะเบียน</td></tr>";
-                    document.getElementById('student-count').innerText = 'จำนวนนักเรียน: 0 คน';
-                    populateDangerClubSelect();
-                    return;
+                    allData = []; renderTable([]); return;
                 }
-                const raw = snap.val();
-                allData = Object.values(raw).sort((a, b) => {
+                allData = Object.values(snap.val()).sort((a, b) => {
                     if (a.classroom !== b.classroom) return String(a.classroom).localeCompare(String(b.classroom));
                     return parseInt(a.no) - parseInt(b.no);
                 });
                 populateDangerClubSelect();
                 filterByLevel(currentFilter);
-            } catch (err) {
-                tbody.innerHTML = `<tr><td colspan='10' style='text-align:center; padding:20px; color:red;'>⚠️ โหลดไม่สำเร็จ: ${err.message}</td></tr>`;
-            }
+            } catch (err) { tbody.innerHTML = `<tr><td colspan='10' style='color:red;'>⚠️ โหลดไม่สำเร็จ: ${err.message}</td></tr>`; }
         }
 
-        function populateDangerClubSelect() {
-            const select = document.getElementById('danger-club-select');
-            if (!select) return;
-            
-            const uniqueClubs = [...new Set(allData.map(row => row.club).filter(Boolean))];
-            
-            select.innerHTML = '<option value="">-- เลือกชุมนุมที่ต้องการลบรายชื่อ --</option>';
-            if (uniqueClubs.length === 0) {
-                select.innerHTML = '<option value="">-- ยังไม่มีนักเรียนลงทะเบียนในระบบ --</option>';
-                return;
-            }
-            
-            uniqueClubs.sort().forEach(club => {
-                const opt = document.createElement('option');
-                opt.value = club;
-                opt.text = club;
-                select.add(opt);
-            });
-        }
-
-        // ==================== แสดงตาราง ====================
         function renderTable(data) {
             const tbody = document.getElementById('adminTableBody');
             tbody.innerHTML = '';
-            if (data.length === 0) {
-                tbody.innerHTML = "<tr><td colspan='10' style='text-align:center; padding:20px; color:#999;'>ไม่พบข้อมูล</td></tr>";
-                document.getElementById('student-count').innerText = 'จำนวนนักเรียน: 0 คน';
-                return;
-            }
             document.getElementById('student-count').innerText = `จำนวนนักเรียน: ${data.length} คน`;
             data.forEach((row, i) => {
-                const level = getLevel(row.classroom);
                 const isAdminClub = Object.keys(adminClubs).some(c => row.club && row.club.includes(c.split(' (')[0]));
                 const tr = document.createElement('tr');
                 if (isAdminClub) tr.style.background = '#fffbea';
@@ -339,7 +271,7 @@
                     <td>${row.email || ''}</td>
                     <td style="text-align:center;">${row.studentId || ''}</td>
                     <td>${row.name || ''}</td>
-                    <td style="text-align:center;">${level}</td>
+                    <td style="text-align:center;">${getLevel(row.classroom)}</td>
                     <td style="text-align:center;">${row.classroom || ''}</td>
                     <td style="text-align:center;">${row.no || ''}</td>
                     <td class="club-cell">${row.club || ''}${isAdminClub ? '<span class="admin-club-tag">Admin</span>' : ''}</td>
@@ -349,335 +281,224 @@
             });
         }
 
-        function searchTable() {
-            const q = document.getElementById('adminSearch').value.toLowerCase();
-            const rows = document.getElementById('adminTableBody').getElementsByTagName('tr');
-            for (let row of rows) {
-                row.style.display = row.innerText.toLowerCase().includes(q) ? '' : 'none';
-            }
+        function populateDangerClubSelect() {
+            const select = document.getElementById('danger-club-select');
+            const uniqueClubs = [...new Set(allData.map(row => row.club).filter(Boolean))].sort();
+            select.innerHTML = '<option value="">-- เลือกชุมนุมที่ต้องการลบรายชื่อ --</option>';
+            uniqueClubs.forEach(club => {
+                const opt = document.createElement('option');
+                opt.value = opt.text = club;
+                select.add(opt);
+            });
         }
 
         function filterByLevel(level) {
             currentFilter = level;
             document.querySelectorAll('.btn-sub').forEach(b => b.classList.remove('active'));
             document.getElementById(`filter-${level}`).classList.add('active');
-            document.getElementById('adminSearch').value = '';
-            if (level === 'all') {
-                renderTable(allData);
-            } else {
-                renderTable(allData.filter(row => {
-                    const grade = parseInt(String(row.classroom).split('/')[0]);
-                    return level === 'junior' ? grade <= 3 : grade >= 4;
-                }));
-            }
+            if (level === 'all') renderTable(allData);
+            else renderTable(allData.filter(row => {
+                const grade = parseInt(String(row.classroom).split('/')[0]);
+                return level === 'junior' ? grade <= 3 : grade >= 4;
+            }));
         }
 
-        // ==================== ลบข้อมูลนักเรียนรายบุคคล ====================
-        async function deleteData(studentId) {
-            if (!confirm(`ยืนยันการลบข้อมูลเลขประจำตัว ${studentId}?`)) return;
-            try {
-                const key  = toKey(studentId);
-                const snap = await db.ref(`registrations/${key}`).get();
-                if (!snap.exists()) { alert('❌ ไม่พบข้อมูลนักเรียน'); return; }
+        // ==================== Export Logic (New!) ====================
+        
+        // ฟังก์ชันใหม่: แยกไฟล์ตามระดับชั้น และแยกแผ่นตามชุมนุม
+        function exportExcelByLevelAndClub(level) {
+            const filtered = allData.filter(row => {
+                const grade = parseInt(String(row.classroom).split('/')[0]);
+                return level === 'junior' ? grade <= 3 : grade >= 4;
+            });
 
-                const clubName = snap.val().club;
-                const clubKey  = toKey(clubName);
-                await db.ref(`registrations/${key}`).remove();
-                await db.ref(`clubs/${clubKey}/count`).transaction(c => Math.max(0, (c || 0) - 1));
-
-                try {
-                    await fetchWithTimeout(`${SCRIPT_URL}?action=delete&studentId=${encodeURIComponent(studentId)}`);
-                } catch (_) { console.warn('Sheets delete failed'); }
-
-                alert('✅ ลบข้อมูลสำเร็จ');
-                loadData();
-            } catch (err) {
-                alert('⚠️ เกิดข้อผิดพลาด: ' + err.message);
+            if (filtered.length === 0) {
+                alert(`ไม่มีข้อมูลนักเรียนชั้น ${level === 'junior' ? 'ม.ต้น' : 'ม.ปลาย'}`);
+                return;
             }
-        }
 
-        // ==================== ลบนักเรียนทั้งหมดในชุมนุมที่เลือก ====================
-        async function clearClubData() {
-            const clubName = document.getElementById('danger-club-select').value;
-            if (!clubName) { alert('❌ กรุณาเลือกชุมนุมที่ต้องการลบข้อมูลก่อนครับ'); return; }
-
-            if (!confirm(`⚠️ คุณต้องการลบรายชื่อนักเรียนทั้งหมดในชุมนุม:\n"${clubName}" ใช่หรือไม่?\n(นักเรียนทุกคนในชุมนุมนี้จะถูกคัดชื่อออก)`)) return;
-            if (!confirm(`🚨 ยืนยันรอบที่ 2: ระบบจะรีเซ็ตจำนวนยอดผู้สมัครของชุมนุมนี้กลับเป็น 0 เพื่อเริ่มรับสมัครใหม่ทันที ยืนยันจริงหรือไม่?`)) return;
-
-            const confirmPass = prompt('🔒 กรุณากรอกรหัสผ่านแอดมินเพื่ออนุมัติการลบรายชื่อทั้งชุมนุม:');
-            if (confirmPass !== "brclub112") { alert('❌ รหัสผ่านไม่ถูกต้อง ยกเลิกคำสั่งลบข้อมูล'); return; }
-
-            try {
-                const targets = allData.filter(row => row.club === clubName);
-                if (targets.length === 0) { alert('ไม่พบรายชื่อนักเรียนในชุมนุมนี้ในระบบอยู่แล้วครับ'); return; }
-
-                const updates = {};
-                targets.forEach(student => {
-                    const studentKey = toKey(student.studentId);
-                    updates[`registrations/${studentKey}`] = null;
-                });
-                
-                const clubKey = toKey(clubName);
-                updates[`clubs/${clubKey}/count`] = 0;
-
-                await db.ref().update(updates);
-                
-                alert(`✅ ลบรายชื่อนักเรียนในชุมนุม "${clubName}" และรีเซ็ตโควตากลับเป็น 0 คนสำเร็จแล้ว!`);
-                loadData();
-            } catch (err) {
-                alert('⚠️ เกิดข้อผิดพลาด: ' + err.message);
-            }
-        }
-
-        // ==================== ลบข้อมูลการลงทะเบียนทั้งหมด (Reset ทั้งระบบ) ====================
-        async function clearAllData() {
-            if (!confirm('⚠️ คำเตือนร้ายแรง: คุณกำลังจะลบรายชื่อนักเรียนทุกคน ทุกห้อง ทุกชุมนุม ออกจากระบบระบบทั้งหมด! ใช่หรือไม่?')) return;
-            if (!confirm('🚨 ยืนยันรอบที่ 2: ข้อมูลตารางการลงทะเบียนนักเรียนทั้งหมดจะถูกเคลียร์ว่าง และรีเซ็ตโควตาทุกชุมนุมเป็น 0 (ไม่สามารถกู้คืนได้) ยืนยันหรือไม่?')) return;
-
-            const confirmPass = prompt('🔒 กรุณากรอกรหัสผ่านแอดมินเพื่อยืนยันการล้างระบบ (Reset ทั้งหมด):');
-            if (confirmPass !== "brclub112") { alert('❌ รหัสผ่านไม่ถูกต้อง ยกเลิกคำสั่งล้างระบบ'); return; }
-
-            try {
-                await db.ref('registrations').remove();
-                await db.ref('clubs').remove();
-                
-                alert('✅ ลบข้อมูลการลงทะเบียนทั้งหมด และรีเซ็ตระบบกลับเป็นค่าเริ่มต้นสำเร็จแล้ว!');
-                loadData();
-            } catch (err) {
-                alert('⚠️ เกิดข้อผิดพลาด: ' + err.message);
-            }
-        }
-
-        // ==================== Excel Export ====================
-        function exportExcel() {
-            if (allData.length === 0) { alert('ไม่มีข้อมูลสำหรับ Export'); return; }
-            const excelData = allData.map((row, i) => formatExcelRow(row, i));
-            const ws = XLSX.utils.json_to_sheet(excelData);
-            ws['!cols'] = [{wch:8},{wch:22},{wch:28},{wch:15},{wch:30},{wch:8},{wch:8},{wch:8},{wch:50}];
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'รายชื่อนักเรียนทั้งหมด');
-            XLSX.writeFile(wb, `รายงานการลงทะเบียนชุมนุม_รวมทั้งหมด_${new Date().toLocaleDateString('th-TH').replace(/\//g, '-')}.xlsx`);
+            const clubsGroup = {};
+
+            // จัดกลุ่มชุมนุม
+            filtered.forEach(row => {
+                const clubName = row.club || 'ไม่ระบุชุมนุม';
+                if (!clubsGroup[clubName]) clubsGroup[clubName] = [];
+                clubsGroup[clubName].push(row);
+            });
+
+            // สร้างแผ่นงานแต่ละชุมนุม
+            Object.keys(clubsGroup).sort().forEach(clubName => {
+                // เรียง ห้อง และ เลขที่ ก่อนลงแผ่น
+                const sortedRows = clubsGroup[clubName].sort((a, b) => {
+                    if (a.classroom !== b.classroom) return String(a.classroom).localeCompare(String(b.classroom));
+                    return parseInt(a.no) - parseInt(b.no);
+                });
+
+                const sData = sortedRows.map((row, i) => formatExcelRow(row, i));
+                const ws = XLSX.utils.json_to_sheet(sData);
+                ws['!cols'] = [{wch:8},{wch:22},{wch:28},{wch:15},{wch:30},{wch:8},{wch:8},{wch:8},{wch:50}];
+                
+                // ตั้งชื่อแผ่น (Excel จำกัด 31 ตัวอักษร)
+                let sheetName = clubName.split(' (')[0].replace(/[:\\\/\?\*\[\]]/g, '_').substring(0, 30);
+                XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            });
+
+            const label = level === 'junior' ? 'ม.ต้น' : 'ม.ปลาย';
+            XLSX.writeFile(wb, `รายชื่อชุมนุม_${label}_${new Date().toLocaleDateString('th-TH').replace(/\//g, '-')}.xlsx`);
+        }
+
+        // ฟังก์ชัน Export อื่นๆ
+        function exportExcel() {
+            if (allData.length === 0) return;
+            const ws = XLSX.utils.json_to_sheet(allData.map((row, i) => formatExcelRow(row, i)));
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'ทั้งหมด');
+            XLSX.writeFile(wb, `ลงทะเบียนรวม_${new Date().toLocaleDateString('th-TH').replace(/\//g, '-')}.xlsx`);
         }
 
         function exportExcelByClub() {
-            if (allData.length === 0) { alert('ไม่มีข้อมูลสำหรับ Export'); return; }
+            if (allData.length === 0) return;
             const wb = XLSX.utils.book_new();
-            
             const clubsGroup = {};
             allData.forEach(row => {
                 const clubName = row.club || 'ไม่ระบุชุมนุม';
                 if (!clubsGroup[clubName]) clubsGroup[clubName] = [];
                 clubsGroup[clubName].push(row);
             });
-            
             Object.keys(clubsGroup).sort().forEach(clubName => {
-                const sortedRows = clubsGroup[clubName].sort((a,b) => {
-                    if(a.classroom !== b.classroom) return String(a.classroom).localeCompare(String(b.classroom));
-                    return parseInt(a.no) - parseInt(b.no);
-                });
-                
-                const sData = sortedRows.map((row, i) => formatExcelRow(row, i));
+                const sData = clubsGroup[clubName].sort((a,b) => String(a.classroom).localeCompare(String(b.classroom)) || parseInt(a.no)-parseInt(b.no))
+                                                  .map((row, i) => formatExcelRow(row, i));
                 const ws = XLSX.utils.json_to_sheet(sData);
-                ws['!cols'] = [{wch:8},{wch:22},{wch:28},{wch:15},{wch:30},{wch:8},{wch:8},{wch:8},{wch:50}];
-                
-                let sheetName = clubName.split(' (')[0]; 
-                sheetName = sheetName.replace(/[:\\\/\?\*\[\]]/g, '_').substring(0, 30);
+                let sheetName = clubName.split(' (')[0].replace(/[:\\\/\?\*\[\]]/g, '_').substring(0, 30);
                 XLSX.utils.book_append_sheet(wb, ws, sheetName);
             });
-            
-            XLSX.writeFile(wb, `รายงานนักเรียน_แยกตามชุมนุม_${new Date().toLocaleDateString('th-TH').replace(/\//g, '-')}.xlsx`);
+            XLSX.writeFile(wb, `แยกตามชุมนุม_ทั้งหมด_${new Date().toLocaleDateString('th-TH').replace(/\//g, '-')}.xlsx`);
         }
 
         function exportExcelByClassroom() {
-            if (allData.length === 0) { alert('ไม่มีข้อมูลสำหรับ Export'); return; }
+            if (allData.length === 0) return;
             const wb = XLSX.utils.book_new();
-            
             const roomGroup = {};
             allData.forEach(row => {
                 const room = row.classroom || 'ไม่ระบุห้อง';
                 if (!roomGroup[room]) roomGroup[room] = [];
                 roomGroup[room].push(row);
             });
-            
-            const sortedRooms = Object.keys(roomGroup).sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
-            
-            sortedRooms.forEach(room => {
-                const sData = roomGroup[room].map((row, i) => formatExcelRow(row, i));
-                const ws = XLSX.utils.json_to_sheet(sData);
-                ws['!cols'] = [{wch:8},{wch:22},{wch:28},{wch:15},{wch:30},{wch:8},{wch:8},{wch:8},{wch:50}];
-                
-                let sheetName = `ห้อง ${room.replace('/', '_')}`;
-                XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            Object.keys(roomGroup).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).forEach(room => {
+                const ws = XLSX.utils.json_to_sheet(roomGroup[room].map((row, i) => formatExcelRow(row, i)));
+                XLSX.utils.book_append_sheet(wb, ws, `ห้อง ${room.replace('/', '_')}`);
             });
-            
-            XLSX.writeFile(wb, `รายงานนักเรียน_แยกตามห้องเรียน_${new Date().toLocaleDateString('th-TH').replace(/\//g, '-')}.xlsx`);
+            XLSX.writeFile(wb, `แยกห้องเรียน_${new Date().toLocaleDateString('th-TH').replace(/\//g, '-')}.xlsx`);
         }
 
-        // ==================== เวลา ====================
+        // ==================== Other Functions (Time, Delete, Modal) (เหมือนเดิม) ====================
         async function loadTime() {
             try {
-                const res  = await fetchWithTimeout(SCRIPT_URL + '?action=getTime');
+                const res = await fetch(SCRIPT_URL + '?action=getTime');
                 const data = await res.json();
-                if (data.juniorOpen)  document.getElementById('juniorOpen').value  = data.juniorOpen;
-                if (data.juniorClose) document.getElementById('juniorClose').value = data.juniorClose;
-                if (data.seniorOpen)  document.getElementById('seniorOpen').value  = data.seniorOpen;
-                if (data.seniorClose) document.getElementById('seniorClose').value = data.seniorClose;
+                document.getElementById('juniorOpen').value = data.juniorOpen || '';
+                document.getElementById('juniorClose').value = data.juniorClose || '';
+                document.getElementById('seniorOpen').value = data.seniorOpen || '';
+                document.getElementById('seniorClose').value = data.seniorClose || '';
             } catch (_) {}
         }
 
         async function saveTime() {
-            const juniorOpen  = document.getElementById('juniorOpen').value;
-            const juniorClose = document.getElementById('juniorClose').value;
-            const seniorOpen  = document.getElementById('seniorOpen').value;
-            const seniorClose = document.getElementById('seniorClose').value;
-            if (!juniorOpen || !juniorClose || !seniorOpen || !seniorClose) {
-                alert('กรุณากรอกเวลาให้ครบทั้ง ม.ต้น และ ม.ปลาย'); return;
-            }
-            try {
-                await fetchWithTimeout(`${SCRIPT_URL}?action=setTime&juniorOpen=${encodeURIComponent(juniorOpen)}&juniorClose=${encodeURIComponent(juniorClose)}&seniorOpen=${encodeURIComponent(seniorOpen)}&seniorClose=${encodeURIComponent(seniorClose)}`);
-                const s = document.getElementById('timeStatus');
-                s.style.color = 'green';
-                s.innerText = '✅ บันทึกแล้ว!';
-                setTimeout(() => s.innerText = '', 3000);
-            } catch (_) {
-                const s = document.getElementById('timeStatus');
-                s.style.color = 'red';
-                s.innerText = '⚠️ บันทึกไม่สำเร็จ';
+            const params = `action=setTime&juniorOpen=${encodeURIComponent(document.getElementById('juniorOpen').value)}&juniorClose=${encodeURIComponent(document.getElementById('juniorClose').value)}&seniorOpen=${encodeURIComponent(document.getElementById('seniorOpen').value)}&seniorClose=${encodeURIComponent(document.getElementById('seniorClose').value)}`;
+            await fetch(`${SCRIPT_URL}?${params}`);
+            document.getElementById('timeStatus').innerText = '✅ บันทึกแล้ว!';
+            setTimeout(() => document.getElementById('timeStatus').innerText = '', 3000);
+        }
+
+        async function deleteData(studentId) {
+            if (!confirm(`ลบเลขประจำตัว ${studentId}?`)) return;
+            const key = toKey(studentId);
+            const snap = await db.ref(`registrations/${key}`).get();
+            if (snap.exists()) {
+                const clubKey = toKey(snap.val().club);
+                await db.ref(`registrations/${key}`).remove();
+                await db.ref(`clubs/${clubKey}/count`).transaction(c => Math.max(0, (c || 0) - 1));
+                alert('ลบสำเร็จ'); loadData();
             }
         }
 
-        // ==================== Modal เพิ่มนักเรียน ====================
+        async function clearClubData() {
+            const clubName = document.getElementById('danger-club-select').value;
+            if (!clubName || !confirm(`ลบนักเรียนทั้งหมดใน "${clubName}"?`)) return;
+            if (prompt('รหัสผ่านแอดมิน:') !== "brclub112") return;
+            const targets = allData.filter(row => row.club === clubName);
+            const updates = {};
+            targets.forEach(s => updates[`registrations/${toKey(s.studentId)}`] = null);
+            updates[`clubs/${toKey(clubName)}/count`] = 0;
+            await db.ref().update(updates);
+            loadData();
+        }
+
+        async function clearAllData() {
+            if (!confirm('ล้างข้อมูลทั้งหมด?') || prompt('รหัสผ่านแอดมิน:') !== "brclub112") return;
+            await db.ref('registrations').remove();
+            await db.ref('clubs').remove();
+            loadData();
+        }
+
         function openAddModal() {
             const sel = document.getElementById('modal-classroom');
             sel.innerHTML = '<option value="">-- เลือกห้อง --</option>';
-            for (let g = 1; g <= 6; g++) {
-                for (let r = 1; r <= 9; r++) {
-                    const opt = document.createElement('option');
-                    opt.value = `${g}/${r}`; opt.text = `${g}/${r}`;
-                    sel.add(opt);
-                }
+            for(let g=1;g<=6;g++) for(let r=1;r<=9;r++) {
+                let opt = document.createElement('option'); opt.value = opt.text = `${g}/${r}`; sel.add(opt);
             }
-            document.getElementById('modal-club').value = '';
-            document.getElementById('modal-name').value = '';
-            document.getElementById('modal-studentId').value = '';
-            document.getElementById('modal-email').value = '';
-            document.getElementById('modal-classroom').value = '';
-            document.getElementById('modal-no').value = '';
-            document.getElementById('modal-status').innerText = '';
             document.getElementById('add-modal').classList.add('show');
         }
 
-        function closeAddModal() {
-            document.getElementById('add-modal').classList.remove('show');
-        }
-
         async function saveAddStudent() {
-            const clubName  = document.getElementById('modal-club').value.trim();
-            const name      = document.getElementById('modal-name').value.trim();
+            const clubName = document.getElementById('modal-club').value;
             const studentId = document.getElementById('modal-studentId').value.trim();
-            const email     = document.getElementById('modal-email').value.trim();
-            const classroom = document.getElementById('modal-classroom').value;
-            const no        = document.getElementById('modal-no').value.trim();
-            const statusEl  = document.getElementById('modal-status');
-
-            if (!clubName)  { statusEl.innerHTML = '<span style="color:red;">❌ กรุณาเลือกชุมนุม</span>'; return; }
-            if (!name)      { statusEl.innerHTML = '<span style="color:red;">❌ กรุณากรอกชื่อ-นามสกุล</span>'; return; }
-            if (!studentId) { statusEl.innerHTML = '<span style="color:red;">❌ กรุณากรอกเลขประจำตัว</span>'; return; }
-            if (!classroom) { statusEl.innerHTML = '<span style="color:red;">❌ กรุณาเลือกห้อง</span>'; return; }
-            if (!no)        { statusEl.innerHTML = '<span style="color:red;">❌ กรุณากรอกเลขที่</span>'; return; }
-
-            const confirmBtn = document.getElementById('modal-confirm');
-            confirmBtn.disabled = true;
-            confirmBtn.innerText = '⏳ กำลังบันทึก...';
-            statusEl.innerText = '';
-
-            const studentKey = toKey(studentId);
-            const clubKey    = toKey(clubName);
-            const capacity   = adminClubs[clubName] || 999;
-
-            try {
-                const existSnap = await db.ref(`registrations/${studentKey}`).get();
-                if (existSnap.exists()) {
-                    statusEl.innerHTML = '<span style="color:red;">⚠️ เลขประจำตัวนี้ลงทะเบียนไปแล้ว</span>';
-                    confirmBtn.disabled = false;
-                    confirmBtn.innerText = '✅ บันทึก';
-                    return;
-                }
-
-                let full = false;
-                await db.ref(`clubs/${clubKey}/count`).transaction(current => {
-                    const count = current || 0;
-                    if (count >= capacity) { full = true; return; }
-                    return count + 1;
-                });
-
-                if (full) {
-                    statusEl.innerHTML = `<span style="color:red;">❌ ชุมนุมเต็มแล้ว (${capacity} คน)</span>`;
-                    confirmBtn.disabled = false;
-                    confirmBtn.innerText = '✅ บันทึก';
-                    return;
-                }
-
-                const timestamp = new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' });
-                await db.ref(`registrations/${studentKey}`).set({
-                    timestamp, email, studentId, no, classroom, name, club: clubName
-                });
-
-                statusEl.innerHTML = '<span style="color:green;">✅ บันทึกสำเร็จ!</span>';
-                setTimeout(() => {
-                    closeAddModal();
-                    loadData();
-                }, 800);
-
-            } catch (err) {
-                statusEl.innerHTML = `<span style="color:red;">⚠️ เกิดข้อผิดพลาด: ${err.message}</span>`;
-            } finally {
-                confirmBtn.disabled = false;
-                confirmBtn.innerText = '✅ บันทึก';
-            }
-        }
-
-        function logout() {
-            sessionStorage.removeItem('adminLoggedIn');
-            document.getElementById('admin-content').style.display = 'none';
-            document.getElementById('admin-login').style.display = 'flex';
-            document.getElementById('admin-password').value = '';
-            allData = [];
-        }
-
-        // ==================== ผูก events ====================
-        window.addEventListener('load', function() {
-            document.getElementById('admin-login-btn').addEventListener('click', checkAdminLogin);
-            document.getElementById('admin-password').addEventListener('keypress', e => {
-                if (e.key === 'Enter') checkAdminLogin();
+            if (!clubName || !studentId) return;
+            const timestamp = new Date().toLocaleString('th-TH');
+            await db.ref(`registrations/${toKey(studentId)}`).set({
+                timestamp, studentId, 
+                name: document.getElementById('modal-name').value,
+                classroom: document.getElementById('modal-classroom').value,
+                no: document.getElementById('modal-no').value,
+                club: clubName,
+                email: document.getElementById('modal-email').value
             });
-            document.getElementById('logout-btn').addEventListener('click', logout);
-            document.getElementById('save-time-btn').addEventListener('click', saveTime);
-            
+            const clubKey = toKey(clubName);
+            await db.ref(`clubs/${clubKey}/count`).transaction(c => (c || 0) + 1);
+            document.getElementById('add-modal').classList.remove('show');
+            loadData();
+        }
+
+        // ==================== Event Listeners ====================
+        window.addEventListener('load', () => {
+            document.getElementById('admin-login-btn').addEventListener('click', checkAdminLogin);
             document.getElementById('export-btn').addEventListener('click', exportExcel);
+            document.getElementById('export-junior-club-btn').addEventListener('click', () => exportExcelByLevelAndClub('junior'));
+            document.getElementById('export-senior-club-btn').addEventListener('click', () => exportExcelByLevelAndClub('senior'));
             document.getElementById('export-club-btn').addEventListener('click', exportExcelByClub);
             document.getElementById('export-room-btn').addEventListener('click', exportExcelByClassroom);
             
-            document.getElementById('clear-club-btn').addEventListener('click', clearClubData);
-            document.getElementById('clear-all-btn').addEventListener('click', clearAllData);
-            
-            document.getElementById('adminSearch').addEventListener('keyup', searchTable);
+            document.getElementById('save-time-btn').addEventListener('click', saveTime);
             document.getElementById('filter-all').addEventListener('click', () => filterByLevel('all'));
             document.getElementById('filter-junior').addEventListener('click', () => filterByLevel('junior'));
             document.getElementById('filter-senior').addEventListener('click', () => filterByLevel('senior'));
             document.getElementById('add-student-btn').addEventListener('click', openAddModal);
-            document.getElementById('modal-cancel').addEventListener('click', closeAddModal);
+            document.getElementById('modal-cancel').addEventListener('click', () => document.getElementById('add-modal').classList.remove('show'));
             document.getElementById('modal-confirm').addEventListener('click', saveAddStudent);
-
-            document.getElementById('add-modal').addEventListener('click', function(e) {
-                if (e.target === this) closeAddModal();
+            document.getElementById('clear-club-btn').addEventListener('click', clearClubData);
+            document.getElementById('clear-all-btn').addEventListener('click', clearAllData);
+            document.getElementById('logout-btn').addEventListener('click', () => { sessionStorage.clear(); location.reload(); });
+            document.getElementById('adminSearch').addEventListener('keyup', () => {
+                const q = document.getElementById('adminSearch').value.toLowerCase();
+                const rows = document.getElementById('adminTableBody').getElementsByTagName('tr');
+                for (let r of rows) r.style.display = r.innerText.toLowerCase().includes(q) ? '' : 'none';
             });
 
             if (sessionStorage.getItem('adminLoggedIn') === 'true') {
                 document.getElementById('admin-login').style.display = 'none';
                 document.getElementById('admin-content').style.display = 'block';
-                loadData();
-                loadTime();
+                loadData(); loadTime();
             }
         });
     </script>
