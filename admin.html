@@ -18,6 +18,7 @@
         .club-cell { font-weight:bold; color:var(--br-red, #c0392b); }
         .btn-export { background:#28a745; color:white; border:none; padding:10px 15px; border-radius:5px; cursor:pointer; font-weight:bold; }
         .btn-del { background:#dc3545; color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer; }
+        .btn-edit { background:#ffc107; color:#000; border:none; padding:5px 10px; border-radius:3px; cursor:pointer; margin-right:5px; }
         .btn-sub { padding:8px 15px; border:1px solid var(--br-red, #c0392b); background:white; color:var(--br-red, #c0392b); border-radius:5px; cursor:pointer; }
         .btn-sub.active { background:var(--br-red, #c0392b); color:white; }
         .filter-btns { display:flex; gap:6px; }
@@ -104,7 +105,7 @@
                     <button id="filter-junior" class="btn-sub">ม.ต้น</button>
                     <button id="filter-senior" class="btn-sub">ม.ปลาย</button>
                 </div>
-                <input type="text" id="adminSearch" placeholder="ค้นหา ชื่อ / เลขประจำตัว / ชุมนุม...">
+                <input type="text" id="adminSearch" placeholder="ค้นหา ชั้น / ชื่อ / อีเมล / เลขประจำตัว / ชุมนุม... (พิมพ์แล้วรอสักครู่ หรือกด Enter)">
                 
                 <button id="export-btn" class="btn-export">📥 Export รวม</button>
                 <button id="export-junior-club-btn" class="btn-export" style="background:#2ecc71;">📥 Export ม.ต้น (แยกชุมนุม)</button>
@@ -175,8 +176,45 @@
             </div>
             <div id="modal-status" style="min-height:20px; font-size:13px; margin-bottom:8px;"></div>
             <div class="modal-actions">
-                <button class="btn-cancel" id="modal-cancel">ยกเลิก</button>
+                <button class="btn-cancel" onclick="document.getElementById('add-modal').classList.remove('show')">ยกเลิก</button>
                 <button class="btn-confirm" id="modal-confirm">✅ บันทึก</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="edit-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h3>✏️ แก้ไขข้อมูลนักเรียน / ย้ายชุมนุม</h3>
+            <div class="modal-grid">
+                <div class="full-width">
+                    <label style="font-size:13px; font-weight:bold; display:block; margin-bottom:4px;">ชื่อ-นามสกุล</label>
+                    <input type="text" id="edit-name" placeholder="ชื่อ-นามสกุล">
+                </div>
+                <div>
+                    <label style="font-size:13px; font-weight:bold; display:block; margin-bottom:4px;">เลขประจำตัว (ห้ามแก้)</label>
+                    <input type="text" id="edit-studentId" readonly style="background:#eee; color:#555;">
+                </div>
+                <div>
+                    <label style="font-size:13px; font-weight:bold; display:block; margin-bottom:4px;">อีเมล</label>
+                    <input type="email" id="edit-email" placeholder="อีเมล">
+                </div>
+                <div>
+                    <label style="font-size:13px; font-weight:bold; display:block; margin-bottom:4px;">ห้อง</label>
+                    <select id="edit-classroom"></select>
+                </div>
+                <div>
+                    <label style="font-size:13px; font-weight:bold; display:block; margin-bottom:4px;">เลขที่</label>
+                    <input type="number" id="edit-no" placeholder="เลขที่">
+                </div>
+                <div class="full-width">
+                    <label style="font-size:13px; font-weight:bold; display:block; margin-bottom:4px;">ชุมนุม (เลือกเพื่อย้าย)</label>
+                    <select id="edit-club"></select>
+                </div>
+            </div>
+            <input type="hidden" id="edit-oldClub">
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="document.getElementById('edit-modal').classList.remove('show')">ยกเลิก</button>
+                <button class="btn-confirm" onclick="saveEditStudent()">✅ บันทึกการแก้ไข</button>
             </div>
         </div>
     </div>
@@ -186,7 +224,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
     <script>
-        // ==================== Firebase Config (เหมือนเดิม) ====================
+        // ==================== Firebase Config ====================
         const firebaseConfig = {
             apiKey: "AIzaSyD_tIAHA7tWS_21w-_J7GHxLA_eDxC7qX8",
             authDomain: "benjama-club-45bf3.firebaseapp.com",
@@ -207,8 +245,13 @@
             "ส่งเสริมประชาธิปไตย ม.ปลาย (นางสาวศิริรัตน์ สงวนศรี / นายอาชวิน สร้อยจิต)": 22
         };
 
+        const allSchoolClubs = [
+            "Freestyle by Science (นายธนวิน จันทร)", "Freedom.G (นางสาวผกาแก้ว ชัยยะ / นางสาววาณี เก่งการทำ)", "เพลิน and play (นางสาวชนชนก นามโสม / นางสาววิชชญา กันบุรมย์)", "เพื่อนที่ปรึกษา (Youth Counselor: YC) (นายรัชพล พลวงค์ษา / นางสาวทิพยรัตน์ อยู่แท้กูล)", "DIY หรรษา (นางสาวกฤติยา โสภิณ / นางสาวมัญชุสร รัตนะ)", "เสน่ห์ปลายจวัก (นางสาวสลิลดา พิชยกัลป์ / นายธนกร แสงผ่อง)", "รอบรู้รัตนโกสินทร์ (นางสาวจุฑารัตน์ สมงาม / นางสาวธันยวีย์ แสนคำทุม)", "ดูหนังหลังเลิกเรียน: English on Screen (นางสาวหทัยภัทร บุญสิงห์ / นายพุทธิวัฒน์ จัยสิน)", "my crafts สร้างสรรค์หรรษา (นายฉัตรมงคล แก้วมณี / นายคุณานนต์ สาสีเสาร์)", "Enjoy with Youtube (นางสาวมินิมล อ่อนจันทร์)", "A-Math & Four Stars (นายศาศวัต คงกะเรียน / นางสาวจันทร์จิรา นวกุล)", "Chinese DIY (นางสาวลลิตา เกรียงเจริญศิริ / นางสาววิภาวี อนุจาผัด)", "โลกศิลปะ (นายกฤษฎา วัฒนศิลป์)", "บาสเกตบอล (นายธวัชชัย ตั้งสุรธีรวงศ์ / นายพิฑูร กิจประเสริฐ)", "ชุมนุมกีฬาบริดจ์ (นายผดุงศักดิ์ บูรณะสมบัติ)", "หมากกระดาน (นายภัทรรัตน์ ปิยะภัทรสกุล / นายธนภูมิ ท้าวมะลิ)", "พิมพ์ดีด-พิมพ์ใจ (นางสาวณัชชนม์ สุวรรณธาดา / นางสาวนพพร วาอุทัศน์ / นายสุทธิพันธ์ สาหมีด)", "ภารกิจพิชิตดิจิทัล (นางจิตราภรณ์ บัวจำรัส / นางสาวเพชรรัตน์ มหรรชกุล)", "Crossword: To Be The Star (นางสาวปปนิตา ยืนยาว / นายคณิน รักเกียรติสกุล / นางอรวรรณ แสแสงสีรุ้ง)", "ครูสาวน่าอีส (นางสาวสุดารัตน์ พลโภชน์ / นายธนิสร ศิริกุล)", "English Club (Keith Pearson / Jack Batty Sewina / Steven Kiyooka)", "ภาษา พาที (นางสาวลินดา เนียมเพราะ / นางสาวปัญญาพร พลีดี / นางสาวโชติกา ไตรเภทพิสัย)", "มูเตลู (นางสาวณฐพรรณ เจนปัญญากุล / นายนาร์ท สายทองติ่ง)", "สร้างสรรค์ปั้นดินไทย (นางสาวโโสรยา สุธาพจน์ / นางสาวศุภัสรา มิ่งแมน)", "ดนตรีไทย (ครูสุริยพงษ์ บุญโกมล)", "ศิลปะเพื่อการแข่งขัน (นางสาวจุฑามาศ ทิพยกระมล / นายทรงยศ คำอยู่)", "นาฏศิลป์ (นายเอกชัย แตบสวัสดิ์ / นางสาวศุุภิสรา กลิ่นหอม )", "วงโยธวาทิต (นายรุ่งโรจน์ ศรีสังข์ / นายยงยศ สง่าวงษ์)", "ว่ายน้ำ (นางสาววารินทร์ เกตุเกลี้ยง / นางสาวเบญญทิพย์ เขียวราชา)", "ส่งเสริมประชาธิปไตย (นางสาวศิริรัตน์ สงวนศรี / นายอาชวิน สร้อยจิต)", "โอ้เอ้วิหารราย (นางสาวยุวดี ว่องสกุลกฤษฎา / นางสาวสว่างจิต แก้วถนัด / นายภควรรษ รอดความทุกข์)",
+            "SMTE ม.ปลาย (นางสาวมินตรา กระเป๋าทอง)", "E-Sport (นายสุทธิพงศ์ อาศิรพจน์ / นางสาวศุุภารัตน์ จันทนะ)", "มิตรภาพบอร์ดเกม (ว่าที่ร.ต.มัฆวัตว์ แสนบุญศิริ / นายพรพงศ์ ทองคำ)", "วิทย์น่าสนุก (นางสาวกวิสรา ทรงอาวุธ)", "Smart Consumer Lab นักสืบสินค้า (นางมะลิวัลย์ ประทุมทอง / นางสาวสุพัตรา ไทยกุล)", "นักล่าของอร่อย (ว่าที่ร้อยตรีหญิงปาริชาติ ธรรมสุวรรณ / นายณิชชภา อโนมา)", "จินตคณิต (นางสาวกรรณิกา ชินวิวัฒนผล / นางสาวนันทวัน สิงห์สังข์)", "คณิตคิดไปเรื่อย (นางสาวนันทวัลย์ เฟื่องฟู / นายธัชณวีย์ สุขทรัพย์)", "A math ม.ปลาย (นางสาวลลิต วรกาญจน์ / นางสาวทฤฒมน บรรจงรอด)", "French for the neighborhood of Sao Ching Cha (นางสาวกานต์ชนก สมภักดี / นายวรพล ขำปาน)", "หนังเปิดโลก (ว่าที่ร้อยตรีปรเมธ เทพขวัญ / นางสาวจงกลกร เลือดทหาร)", "A-Level คณิตศาสตร์ (ครูนพกร จิราศักดิ์เกษม)", "Guidance & Growth Club (ครูวัสสิกา นุ่นทอง)", "TED Talks x BR (นางสาวดารากันย์ เจริญจิต / นางสาวนิตยา อาจเดช)", "เล่นให้เป็นคน (นายตรัยรัตน์ บุญพา / นายธนพล ห้วยหงษ์ทอง)", "Drama and Film (นางสาวพิมพลอย รัตนมาศ / นายธิติพงศ์ จุรุฑา)", "รอบรู้รอบรั้วโรงเรียน (นายไไพรัตน์ ลิ้มปองทรัพย์)", "Hello World: ท่องโลก 3 สไตล์ (นายวิทยา ศรีสร้อย / นางสาวพิมพ์พรรณ มโนมัยฤนาท)", "อะไรจีน จีน (นางสาวจิรพร เข็มเพ็ชร์ / Miss Wang Fei)", "วิทยากรรุ่นเยาว์ (นายรุ่งโรจน์ ติดมา)", "บาสเกตบอล ม.ปลาย (นายธวัชชัย ตั้งสุรธีรวงศ์ / นายพิฑูร กิจประเสริฐ)", "ชุมนุมกีฬาบริดจ์ ม.ปลาย (นายผดุงศักดิ์ บูรณะสมบัติ)", "หมากกระดาน ม.ปลาย (นายภัทรรัตน์ ปิยะภัทรสกุล / นายธนภูมิ ท้าวมะลิ)", "พิมพ์ดีด-พิมพ์ใจ ม.ปลาย (นางสาวณัชชนม์ สุวรรณธาดา / นางสาวนพพร วาอุทัศน์)", "ภารกิจพิชิตดิจิทัล ม.ปลาย (นางจิตราภรณ์ บัวจำรัส / นางสาวเพชรรัตน์ มหรรชกุล)", "Crossword: To Be The Star ม.ปลาย (นางสาวปนิตา ยืนยาว / นายคณิน รักเกียรติสกุล / นางอรวรรณ แสแสงสีรุ้ง)", "ครูสาวน่าอีส ม.ปลาย (นางสาวสุดารัตน์ พลโภชน์ / นายธนิสร ศิริกุล)", "English Club ม.ปลาย (Keith Pearson / Jack Batty Sewina / Steven Kiyooka)", "ภาษา พาที ม.ปลาย (นางสาวลินดา เนียมเพราะ / นางสาวปัญญาพร พลีดี / นางสาวโชติกา ไตรเภทพิสัย)", "มูเตลู ม.ปลาย (นางสาวณฐพรรณ เจนปัญญากุล / นายนาร์ท สายทองติ่ง)", "สร้างสรรค์ปั้นดินไทย ม.ปลาย (นางสาวโสรยา สุธาพจน์ / นางสาวศุภัสรา มิ่งแมน)", "ดนตรีไทย ม.ปลาย (ครูสุริยพงษ์ บุญโกมล)", "ศิลปะเพื่อการแข่งขัน ม.ปลาย (นางสาวจุฑามาศ ทิพยกระมล / นายทรงยศ คำอยู่)", "นาฏศิลป์ ม.ปลาย(นายเอกชัย แตบสวัสดิ์ / นางสาวศุุภิสรา กลิ่นหอม)", "วงโยธวาทิต ม.ปลาย (นายรุ่งโรจน์ ศรีสังข์ / นายยงยศ สง่าวงษ์)", "ว่ายน้ำ ม.ปลาย (นางสาววารินทร์ เกตุเกลี้ยง / นางสาวเบญญทิพย์ เขียวราชา)", "ส่งเสริมประชาธิปไตย ม.ปลาย (นางสาวศิริรัตน์ สงวนศรี / นายอาชวิน สร้อยจิต)", "โอ้เอ้วิหารราย ม.ปลาย (นางสาวยุวดี ว่องสกุลกฤษฎา / นางสาวสว่างจิต แก้วถนัด / นายภควรรษ รอดความทุกข์)"
+        ];
+
         // ==================== Helpers ====================
-        function toKey(str) { return str.replace(/[.#$/\[\]]/g, '_'); }
+        function toKey(str) { return str ? str.replace(/[.#$/\[\]]/g, '_') : ''; }
         function getLevel(classroom) {
             const grade = parseInt(String(classroom).split('/')[0]);
             return grade <= 3 ? 'ม.ต้น' : 'ม.ปลาย';
@@ -227,7 +270,7 @@
             };
         }
 
-        // ==================== Logic (Login, Load, Render) ====================
+        // ==================== Logic ====================
         function checkAdminLogin() {
             const pass = document.getElementById('admin-password').value;
             if (pass === "brclub112") {
@@ -275,10 +318,86 @@
                     <td style="text-align:center;">${row.classroom || ''}</td>
                     <td style="text-align:center;">${row.no || ''}</td>
                     <td class="club-cell">${row.club || ''}${isAdminClub ? '<span class="admin-club-tag">Admin</span>' : ''}</td>
-                    <td style="text-align:center;"><button class="btn-del" onclick="deleteData('${row.studentId}')">ลบ</button></td>
+                    <td style="text-align:center; min-width:110px;">
+                        <button class="btn-edit" onclick="openEditModal('${row.studentId}')">✏️ แก้ไข</button>
+                        <button class="btn-del" onclick="deleteData('${row.studentId}')">🗑️</button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        // Search Function
+        function performSearch() {
+            const q = document.getElementById('adminSearch').value.toLowerCase().trim();
+            const rows = document.getElementById('adminTableBody').getElementsByTagName('tr');
+            for (let r of rows) {
+                if (r.cells.length > 1) { // ข้ามแถวที่บอกว่ากำลังโหลดหรือไม่มีข้อมูล
+                    r.style.display = r.innerText.toLowerCase().includes(q) ? '' : 'none';
+                }
+            }
+        }
+
+        function openEditModal(studentId) {
+            const student = allData.find(s => s.studentId === String(studentId));
+            if (!student) return;
+
+            const selClass = document.getElementById('edit-classroom');
+            selClass.innerHTML = '<option value="">-- เลือกห้อง --</option>';
+            for(let g=1; g<=6; g++) {
+                for(let r=1; r<=9; r++) {
+                    let opt = document.createElement('option');
+                    opt.value = opt.text = `${g}/${r}`;
+                    if (student.classroom === `${g}/${r}`) opt.selected = true;
+                    selClass.add(opt);
+                }
+            }
+
+            const selClub = document.getElementById('edit-club');
+            selClub.innerHTML = '<option value="">-- เลือกชุมนุม --</option>';
+            const currentClubsInDb = [...new Set(allData.map(r => r.club).filter(Boolean))];
+            const mergedClubs = [...new Set([...allSchoolClubs, ...currentClubsInDb])].sort();
+            
+            mergedClubs.forEach(c => {
+                let opt = document.createElement('option');
+                opt.value = opt.text = c;
+                if (student.club === c) opt.selected = true;
+                selClub.add(opt);
+            });
+
+            document.getElementById('edit-name').value = student.name || '';
+            document.getElementById('edit-studentId').value = student.studentId || '';
+            document.getElementById('edit-email').value = student.email || '';
+            document.getElementById('edit-no').value = student.no || '';
+            document.getElementById('edit-oldClub').value = student.club || '';
+
+            document.getElementById('edit-modal').classList.add('show');
+        }
+
+        async function saveEditStudent() {
+            const studentId = document.getElementById('edit-studentId').value;
+            const newName = document.getElementById('edit-name').value.trim();
+            const newEmail = document.getElementById('edit-email').value.trim();
+            const newClassroom = document.getElementById('edit-classroom').value;
+            const newNo = document.getElementById('edit-no').value;
+            const newClub = document.getElementById('edit-club').value;
+            const oldClub = document.getElementById('edit-oldClub').value;
+
+            if (!newName || !newClassroom || !newNo || !newClub) {
+                alert("กรุณากรอกข้อมูลสำคัญให้ครบถ้วน"); return;
+            }
+
+            try {
+                if (newClub !== oldClub) {
+                    if (oldClub) await db.ref(`clubs/${toKey(oldClub)}/count`).transaction(c => Math.max(0, (c || 0) - 1));
+                    await db.ref(`clubs/${toKey(newClub)}/count`).transaction(c => (c || 0) + 1);
+                }
+                await db.ref(`registrations/${toKey(studentId)}`).update({
+                    name: newName, email: newEmail, classroom: newClassroom, no: newNo, club: newClub
+                });
+                document.getElementById('edit-modal').classList.remove('show');
+                alert("✅ บันทึกสำเร็จ!"); loadData();
+            } catch (error) { alert("⚠️ ผิดพลาด: " + error.message); }
         }
 
         function populateDangerClubSelect() {
@@ -303,58 +422,36 @@
             }));
         }
 
-        // ==================== Export Logic (New!) ====================
-        
-        // ฟังก์ชันใหม่: แยกไฟล์ตามระดับชั้น และแยกแผ่นตามชุมนุม
-        function exportExcelByLevelAndClub(level) {
-            const filtered = allData.filter(row => {
-                const grade = parseInt(String(row.classroom).split('/')[0]);
-                return level === 'junior' ? grade <= 3 : grade >= 4;
-            });
-
-            if (filtered.length === 0) {
-                alert(`ไม่มีข้อมูลนักเรียนชั้น ${level === 'junior' ? 'ม.ต้น' : 'ม.ปลาย'}`);
-                return;
-            }
-
-            const wb = XLSX.utils.book_new();
-            const clubsGroup = {};
-
-            // จัดกลุ่มชุมนุม
-            filtered.forEach(row => {
-                const clubName = row.club || 'ไม่ระบุชุมนุม';
-                if (!clubsGroup[clubName]) clubsGroup[clubName] = [];
-                clubsGroup[clubName].push(row);
-            });
-
-            // สร้างแผ่นงานแต่ละชุมนุม
-            Object.keys(clubsGroup).sort().forEach(clubName => {
-                // เรียง ห้อง และ เลขที่ ก่อนลงแผ่น
-                const sortedRows = clubsGroup[clubName].sort((a, b) => {
-                    if (a.classroom !== b.classroom) return String(a.classroom).localeCompare(String(b.classroom));
-                    return parseInt(a.no) - parseInt(b.no);
-                });
-
-                const sData = sortedRows.map((row, i) => formatExcelRow(row, i));
-                const ws = XLSX.utils.json_to_sheet(sData);
-                ws['!cols'] = [{wch:8},{wch:22},{wch:28},{wch:15},{wch:30},{wch:8},{wch:8},{wch:8},{wch:50}];
-                
-                // ตั้งชื่อแผ่น (Excel จำกัด 31 ตัวอักษร)
-                let sheetName = clubName.split(' (')[0].replace(/[:\\\/\?\*\[\]]/g, '_').substring(0, 30);
-                XLSX.utils.book_append_sheet(wb, ws, sheetName);
-            });
-
-            const label = level === 'junior' ? 'ม.ต้น' : 'ม.ปลาย';
-            XLSX.writeFile(wb, `รายชื่อชุมนุม_${label}_${new Date().toLocaleDateString('th-TH').replace(/\//g, '-')}.xlsx`);
-        }
-
-        // ฟังก์ชัน Export อื่นๆ
+        // ==================== Exports ====================
         function exportExcel() {
             if (allData.length === 0) return;
             const ws = XLSX.utils.json_to_sheet(allData.map((row, i) => formatExcelRow(row, i)));
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'ทั้งหมด');
             XLSX.writeFile(wb, `ลงทะเบียนรวม_${new Date().toLocaleDateString('th-TH').replace(/\//g, '-')}.xlsx`);
+        }
+
+        function exportExcelByLevelAndClub(level) {
+            const filtered = allData.filter(row => {
+                const grade = parseInt(String(row.classroom).split('/')[0]);
+                return level === 'junior' ? grade <= 3 : grade >= 4;
+            });
+            if (filtered.length === 0) return;
+            const wb = XLSX.utils.book_new();
+            const clubsGroup = {};
+            filtered.forEach(row => {
+                const clubName = row.club || 'ไม่ระบุชุมนุม';
+                if (!clubsGroup[clubName]) clubsGroup[clubName] = [];
+                clubsGroup[clubName].push(row);
+            });
+            Object.keys(clubsGroup).sort().forEach(clubName => {
+                const sData = clubsGroup[clubName].sort((a,b)=>String(a.classroom).localeCompare(String(b.classroom))||parseInt(a.no)-parseInt(b.no))
+                                                  .map((row, i) => formatExcelRow(row, i));
+                const ws = XLSX.utils.json_to_sheet(sData);
+                let sheetName = clubName.split(' (')[0].replace(/[:\\\/\?\*\[\]]/g, '_').substring(0, 30);
+                XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            });
+            XLSX.writeFile(wb, `รายชื่อชุมนุม_${level === 'junior' ? 'ม.ต้น' : 'ม.ปลาย'}_${new Date().toLocaleDateString('th-TH').replace(/\//g, '-')}.xlsx`);
         }
 
         function exportExcelByClub() {
@@ -367,7 +464,7 @@
                 clubsGroup[clubName].push(row);
             });
             Object.keys(clubsGroup).sort().forEach(clubName => {
-                const sData = clubsGroup[clubName].sort((a,b) => String(a.classroom).localeCompare(String(b.classroom)) || parseInt(a.no)-parseInt(b.no))
+                const sData = clubsGroup[clubName].sort((a,b)=>String(a.classroom).localeCompare(String(b.classroom))||parseInt(a.no)-parseInt(b.no))
                                                   .map((row, i) => formatExcelRow(row, i));
                 const ws = XLSX.utils.json_to_sheet(sData);
                 let sheetName = clubName.split(' (')[0].replace(/[:\\\/\?\*\[\]]/g, '_').substring(0, 30);
@@ -392,7 +489,7 @@
             XLSX.writeFile(wb, `แยกห้องเรียน_${new Date().toLocaleDateString('th-TH').replace(/\//g, '-')}.xlsx`);
         }
 
-        // ==================== Other Functions (Time, Delete, Modal) (เหมือนเดิม) ====================
+        // ==================== Admin Tools ====================
         async function loadTime() {
             try {
                 const res = await fetch(SCRIPT_URL + '?action=getTime');
@@ -418,7 +515,7 @@
             if (snap.exists()) {
                 const clubKey = toKey(snap.val().club);
                 await db.ref(`registrations/${key}`).remove();
-                await db.ref(`clubs/${clubKey}/count`).transaction(c => Math.max(0, (c || 0) - 1));
+                if(clubKey) await db.ref(`clubs/${clubKey}/count`).transaction(c => Math.max(0, (c || 0) - 1));
                 alert('ลบสำเร็จ'); loadData();
             }
         }
@@ -454,7 +551,7 @@
         async function saveAddStudent() {
             const clubName = document.getElementById('modal-club').value;
             const studentId = document.getElementById('modal-studentId').value.trim();
-            if (!clubName || !studentId) return;
+            if (!clubName || !studentId) { alert("กรุณาเลือกชุมนุมและใส่เลขประจำตัว"); return; }
             const timestamp = new Date().toLocaleString('th-TH');
             await db.ref(`registrations/${toKey(studentId)}`).set({
                 timestamp, studentId, 
@@ -464,8 +561,7 @@
                 club: clubName,
                 email: document.getElementById('modal-email').value
             });
-            const clubKey = toKey(clubName);
-            await db.ref(`clubs/${clubKey}/count`).transaction(c => (c || 0) + 1);
+            await db.ref(`clubs/${toKey(clubName)}/count`).transaction(c => (c || 0) + 1);
             document.getElementById('add-modal').classList.remove('show');
             loadData();
         }
@@ -484,15 +580,25 @@
             document.getElementById('filter-junior').addEventListener('click', () => filterByLevel('junior'));
             document.getElementById('filter-senior').addEventListener('click', () => filterByLevel('senior'));
             document.getElementById('add-student-btn').addEventListener('click', openAddModal);
-            document.getElementById('modal-cancel').addEventListener('click', () => document.getElementById('add-modal').classList.remove('show'));
             document.getElementById('modal-confirm').addEventListener('click', saveAddStudent);
             document.getElementById('clear-club-btn').addEventListener('click', clearClubData);
             document.getElementById('clear-all-btn').addEventListener('click', clearAllData);
-            document.getElementById('logout-btn').addEventListener('click', () => { sessionStorage.clear(); location.reload(); });
-            document.getElementById('adminSearch').addEventListener('keyup', () => {
-                const q = document.getElementById('adminSearch').value.toLowerCase();
-                const rows = document.getElementById('adminTableBody').getElementsByTagName('tr');
-                for (let r of rows) r.style.display = r.innerText.toLowerCase().includes(q) ? '' : 'none';
+            
+            // ปุ่ม Logout
+            document.getElementById('logout-btn').addEventListener('click', () => {
+                sessionStorage.clear();
+                window.location.reload();
+            });
+            
+            // ระบบค้นหา (แบบพิมพ์แล้วเปลี่ยนทันที)
+            document.getElementById('adminSearch').addEventListener('input', performSearch);
+            
+            // ระบบค้นหา (แบบกด Enter)
+            document.getElementById('adminSearch').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    performSearch();
+                }
             });
 
             if (sessionStorage.getItem('adminLoggedIn') === 'true') {
